@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Sexo {
+  MASCULINO
+  FEMININO
+}
+
+enum NivelAtividade {
+  SEDENTARIO // fator 1.2
+  LEVE // fator 1.375
+  MODERADO // fator 1.55
+  ATIVO // fator 1.725
+  MUITO_ATIVO // fator 1.9
+}
+
+enum Objetivo {
+  PERDER // -500 kcal
+  MANTER // 0
+  GANHAR // +300 kcal
+}
+
+enum TipoRefeicao {
+  CAFE
+  ALMOCO
+  JANTAR
+  LANCHE
+}
+
+enum OrigemAlimento {
+  SCAN
+  MANUAL
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  senhaHash      String
+  nome           String?
+  // Dados do onboarding: nulos até o usuário completar o wizard.
+  // metaCalorias é o "porteiro": se for null, o app redireciona pro onboarding.
+  peso           Float? // kg
+  altura         Float? // cm
+  idade          Int?
+  sexo           Sexo?
+  nivelAtividade NivelAtividade?
+  objetivo       Objetivo?
+  metaCalorias   Int?
+  criadoEm       DateTime        @default(now())
+  refeicoes      Meal[]
+}
+
+model Meal {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tipo          TipoRefeicao
+  dataHora      DateTime     @default(now())
+  // Totais desnormalizados (soma dos itens) para o diário não precisar agregar a cada render
+  totalCalorias Float
+  totalProteina Float
+  totalCarbo    Float
+  totalGordura  Float
+  itens         FoodItem[]
+
+  @@index([userId, dataHora])
+}
+
+model FoodItem {
+  id       String         @id @default(cuid())
+  mealId   String
+  meal     Meal           @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  nome     String
+  porcao   String // ex.: "4 colheres de sopa (100g)"
+  calorias Float
+  proteina Float
+  carbo    Float
+  gordura  Float
+  origem   OrigemAlimento
+}
