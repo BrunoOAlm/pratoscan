@@ -4,7 +4,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // url: conexão POOLED (PgBouncer) — usada pelo app em runtime.
+  // directUrl: conexão DIRETA — usada só pelo Prisma nas migrations,
+  // que precisam de comandos que o pooler não suporta.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Sexo {
