@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import type { TipoRefeicao } from "@prisma/client";
+import type { TipoRefeicao, OrigemAlimento } from "@prisma/client";
 
 const TIPOS: TipoRefeicao[] = ["CAFE", "ALMOCO", "JANTAR", "LANCHE"];
+const ORIGENS: OrigemAlimento[] = ["SCAN", "MANUAL"];
 
 interface ItemRecebido {
   nome?: unknown;
@@ -12,6 +13,7 @@ interface ItemRecebido {
   proteina?: unknown;
   carbo?: unknown;
   gordura?: unknown;
+  origem?: unknown;
 }
 
 // Faixas de sanidade por item — pegam tanto payload adulterado quanto uma
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
     proteina: number;
     carbo: number;
     gordura: number;
-    origem: "SCAN";
+    origem: OrigemAlimento;
   }
   const itens: ItemValidado[] = [];
   for (const item of body.itens as ItemRecebido[]) {
@@ -62,11 +64,13 @@ export async function POST(request: Request) {
     const proteina = validarNumero(item.proteina, 500);
     const carbo = validarNumero(item.carbo, 500);
     const gordura = validarNumero(item.gordura, 500);
+    // origem vem do client (SCAN = item identificado na foto, MANUAL = adicionado na mão)
+    const origem = ORIGENS.includes(item.origem as OrigemAlimento) ? (item.origem as OrigemAlimento) : null;
 
-    if (!nome || !porcao || calorias === null || proteina === null || carbo === null || gordura === null) {
+    if (!nome || !porcao || calorias === null || proteina === null || carbo === null || gordura === null || origem === null) {
       return NextResponse.json({ erro: "Item da refeição inválido." }, { status: 400 });
     }
-    itens.push({ nome, porcao, calorias, proteina, carbo, gordura, origem: "SCAN" as const });
+    itens.push({ nome, porcao, calorias, proteina, carbo, gordura, origem });
   }
 
   const soma = (campo: "calorias" | "proteina" | "carbo" | "gordura") =>
