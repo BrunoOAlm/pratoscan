@@ -1,0 +1,38 @@
+# CI: roda em todo push/PR na main — lint, typecheck e build de produção.
+# O build usa variáveis de ambiente FALSAS: nenhum código conecta ao banco ou
+# à API da Anthropic durante o build, elas só precisam existir.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npx eslint src --max-warnings 0
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+          AUTH_SECRET: ci-build-secret
+          ANTHROPIC_API_KEY: ci-build-fake-key
