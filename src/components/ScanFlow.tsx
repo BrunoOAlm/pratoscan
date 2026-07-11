@@ -197,7 +197,7 @@ export default function ScanFlow() {
             <div className="relative">
               {/* Halo pulsante convida ao toque — o momento-chave do app */}
               <motion.span
-                className="absolute inset-0 rounded-full bg-lime-400/20"
+                className="absolute inset-0 rounded-full bg-orange-500/20"
                 animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
               />
@@ -205,21 +205,21 @@ export default function ScanFlow() {
                 type="button"
                 whileTap={{ scale: 0.93 }}
                 onClick={() => inputRef.current?.click()}
-                className="relative flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-b from-lime-300 to-lime-500 text-6xl shadow-xl shadow-lime-500/30"
+                className="relative flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-b from-orange-400 to-orange-500 text-6xl shadow-xl shadow-orange-500/30"
                 aria-label="Fotografar prato"
               >
                 📷
               </motion.button>
             </div>
             <h1 className="mt-8 text-2xl font-bold">Fotografe seu prato</h1>
-            <p className="mt-2 max-w-xs text-zinc-400">
+            <p className="mt-2 max-w-xs text-zinc-500">
               A IA identifica os alimentos e estima calorias e macros. Você revisa antes de salvar.
             </p>
             {erro && (
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-6 max-w-xs rounded-2xl border border-red-900/60 bg-red-950/40 px-4 py-3 text-sm text-red-300"
+                className="mt-6 max-w-xs rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
               >
                 {erro}
               </motion.p>
@@ -237,7 +237,7 @@ export default function ScanFlow() {
             exit={{ opacity: 0 }}
           >
             <h1 className="text-2xl font-bold tracking-tight">Encontrei isto 🍽️</h1>
-            <p className="mt-1 text-sm text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-500">
               Ajuste as porções ou remova o que não estiver certo.
             </p>
 
@@ -250,8 +250,8 @@ export default function ScanFlow() {
                   onClick={() => setTipo(t.valor)}
                   className={`rounded-xl border px-1 py-2 text-center text-xs font-medium transition-colors ${
                     tipo === t.valor
-                      ? "border-lime-400/60 bg-lime-400/10 text-lime-300 shadow-[0_0_14px_rgba(163,230,53,0.12)]"
-                      : "border-white/[0.07] bg-white/[0.03] text-zinc-400"
+                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 shadow-[0_0_14px_rgba(16,185,129,0.15)]"
+                      : "border-zinc-200 bg-white text-zinc-500"
                   }`}
                 >
                   <span className="block text-base">{t.emoji}</span>
@@ -278,8 +278,8 @@ export default function ScanFlow() {
 
             {/* Total + salvar */}
             <div className="mt-6 flex items-baseline justify-between">
-              <span className="text-zinc-400">Total da refeição</span>
-              <span className="text-2xl font-bold text-lime-400">
+              <span className="text-zinc-500">Total da refeição</span>
+              <span className="text-2xl font-bold text-emerald-600">
                 {totalCalorias.toLocaleString("pt-BR")}{" "}
                 <span className="text-sm font-medium text-zinc-400">kcal</span>
               </span>
@@ -337,7 +337,7 @@ function TelaAnalisando() {
       <div className="relative flex h-32 w-32 items-center justify-center">
         {/* Anel girando */}
         <motion.span
-          className="absolute inset-0 rounded-full border-4 border-white/[0.07] border-t-lime-400 drop-shadow-[0_0_10px_rgba(163,230,53,0.4)]"
+          className="absolute inset-0 rounded-full border-4 border-zinc-100 border-t-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.35)]"
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1.1, ease: "linear" }}
         />
@@ -360,7 +360,7 @@ function TelaAnalisando() {
           {MENSAGENS_LOADING[indice]}
         </motion.p>
       </AnimatePresence>
-      <p className="mt-2 text-sm text-zinc-500">Isso leva alguns segundos</p>
+      <p className="mt-2 text-sm text-zinc-400">Isso leva alguns segundos</p>
     </motion.div>
   );
 }
@@ -391,17 +391,17 @@ function CardAlimento(props: {
           <p className="font-semibold">
             {base.nome}
             {origem === "MANUAL" && (
-              <span className="ml-2 rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+              <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
                 manual
               </span>
             )}
           </p>
-          <p className="mt-0.5 truncate text-sm text-zinc-400">{base.porcao}</p>
+          <p className="mt-0.5 truncate text-sm text-zinc-500">{base.porcao}</p>
         </div>
         <button
           type="button"
           onClick={props.aoRemover}
-          className="shrink-0 rounded-full p-1 text-zinc-500 transition-colors hover:text-red-400"
+          className="shrink-0 rounded-full p-1 text-zinc-400 transition-colors hover:text-red-500"
           aria-label={`Remover ${base.nome}`}
         >
           ✕
@@ -410,11 +410,11 @@ function CardAlimento(props: {
 
       <div className="mt-3 flex items-center justify-between">
         {/* Stepper de porção: −/+ em passos de 0.5× */}
-        <div className="flex items-center gap-3 rounded-full border border-white/[0.06] bg-white/[0.05] px-2 py-1">
+        <div className="flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-1">
           <button
             type="button"
             onClick={() => props.aoAjustar(-0.5)}
-            className="h-7 w-7 rounded-full text-lg leading-none text-zinc-300 active:bg-zinc-700"
+            className="h-7 w-7 rounded-full text-lg leading-none text-zinc-600 active:bg-zinc-200"
             aria-label="Diminuir porção"
           >
             −
@@ -425,13 +425,13 @@ function CardAlimento(props: {
           <button
             type="button"
             onClick={() => props.aoAjustar(0.5)}
-            className="h-7 w-7 rounded-full text-lg leading-none text-zinc-300 active:bg-zinc-700"
+            className="h-7 w-7 rounded-full text-lg leading-none text-zinc-600 active:bg-zinc-200"
             aria-label="Aumentar porção"
           >
             +
           </button>
         </div>
-        <p className="text-lg font-bold text-lime-400">
+        <p className="text-lg font-bold text-emerald-600">
           {kcal.toLocaleString("pt-BR")} <span className="text-xs font-medium text-zinc-400">kcal</span>
         </p>
       </div>
@@ -481,7 +481,7 @@ function FormAdicionarManual(props: { aoAdicionar: (item: ItemScan) => void }) {
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="mt-3 w-full rounded-2xl border border-dashed border-white/15 px-4 py-3 text-sm font-medium text-zinc-400 transition-colors hover:border-white/30"
+        className="mt-3 w-full rounded-2xl border border-dashed border-zinc-300 px-4 py-3 text-sm font-medium text-zinc-500 transition-colors hover:border-zinc-400"
       >
         + Adicionar alimento manualmente
       </button>

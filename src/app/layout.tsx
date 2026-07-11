@@ -18,10 +18,10 @@ export const metadata: Metadata = {
   description: "Fotografe seu prato e acompanhe suas calorias",
   applicationName: "PratoScan",
   // iOS não usa o manifest: estas tags fazem o "Adicionar à Tela de Início"
-  // do Safari abrir em tela cheia com a status bar integrada ao tema escuro
+  // do Safari abrir em tela cheia; status bar padrão (texto escuro) no tema claro
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "PratoScan",
   },
 };
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 // maximumScale/userScalable travados para a experiência parecer app nativo
 // (evita zoom acidental ao tocar em inputs no iOS)
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

@@ -119,7 +119,7 @@ export default function DetalheRefeicao({ refeicao }: Props) {
       <div className="flex items-center gap-3">
         <Link
           href={linkVoltar}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.04] text-lg text-zinc-300 transition active:scale-90"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-lg text-zinc-600 transition active:scale-90"
           aria-label="Voltar ao diário"
         >
           ←
@@ -128,7 +128,7 @@ export default function DetalheRefeicao({ refeicao }: Props) {
           <h1 className="text-xl font-bold">
             {tipoAtual.emoji} {tipoAtual.rotulo}
           </h1>
-          <p className="text-sm text-zinc-400">às {refeicao.horario}</p>
+          <p className="text-sm text-zinc-500">às {refeicao.horario}</p>
         </div>
       </div>
 
@@ -142,8 +142,8 @@ export default function DetalheRefeicao({ refeicao }: Props) {
             onClick={() => trocarTipo(t.valor)}
             className={`rounded-xl border px-1 py-2 text-center text-xs font-medium transition-colors ${
               refeicao.tipo === t.valor
-                ? "border-lime-400/60 bg-lime-400/10 text-lime-300 shadow-[0_0_14px_rgba(163,230,53,0.12)]"
-                : "border-white/[0.07] bg-white/[0.03] text-zinc-400"
+                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 shadow-[0_0_14px_rgba(16,185,129,0.15)]"
+                : "border-zinc-200 bg-white text-zinc-500"
             }`}
           >
             <span className="block text-base">{t.emoji}</span>
@@ -155,8 +155,8 @@ export default function DetalheRefeicao({ refeicao }: Props) {
       {/* Totais */}
       <div className="cartao-item mt-5 p-4">
         <div className="flex items-baseline justify-between">
-          <span className="text-zinc-400">Total</span>
-          <span className="text-2xl font-bold text-lime-400">
+          <span className="text-zinc-500">Total</span>
+          <span className="text-2xl font-bold text-emerald-600">
             {Math.round(refeicao.totais.calorias).toLocaleString("pt-BR")}{" "}
             <span className="text-sm font-medium text-zinc-400">kcal</span>
           </span>
@@ -183,19 +183,19 @@ export default function DetalheRefeicao({ refeicao }: Props) {
                   <p className="font-semibold">
                     {item.nome}
                     {item.origem === "MANUAL" && (
-                      <span className="ml-2 rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+                      <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
                         manual
                       </span>
                     )}
                   </p>
-                  <p className="mt-0.5 truncate text-sm text-zinc-400">{item.porcao}</p>
+                  <p className="mt-0.5 truncate text-sm text-zinc-500">{item.porcao}</p>
                   <p className="mt-1 text-xs text-zinc-500">
                     P {formatarG(item.proteina)}g · C {formatarG(item.carbo)}g · G{" "}
                     {formatarG(item.gordura)}g
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
-                  <p className="font-bold text-lime-400">
+                  <p className="font-bold text-emerald-600">
                     {Math.round(item.calorias).toLocaleString("pt-BR")}
                     <span className="ml-1 text-xs font-medium text-zinc-400">kcal</span>
                   </p>
@@ -203,7 +203,7 @@ export default function DetalheRefeicao({ refeicao }: Props) {
                     type="button"
                     disabled={ocupado}
                     onClick={() => removerItem(item.id)}
-                    className="text-xs text-zinc-500 transition-colors hover:text-red-400"
+                    className="text-xs text-zinc-400 transition-colors hover:text-red-500"
                   >
                     remover
                   </button>
@@ -214,7 +214,7 @@ export default function DetalheRefeicao({ refeicao }: Props) {
         </AnimatePresence>
       </div>
 
-      {erro && <p className="mt-4 text-sm text-red-400">{erro}</p>}
+      {erro && <p className="mt-4 text-sm text-red-500">{erro}</p>}
 
       {/* Excluir refeição (dois toques) */}
       <button
@@ -224,8 +224,8 @@ export default function DetalheRefeicao({ refeicao }: Props) {
         onBlur={() => setConfirmandoExclusao(false)}
         className={`mt-8 w-full rounded-2xl border px-4 py-3.5 text-base font-semibold transition ${
           confirmandoExclusao
-            ? "border-red-500 bg-red-500/10 text-red-400"
-            : "border-zinc-800 text-zinc-400"
+            ? "border-red-400 bg-red-50 text-red-600"
+            : "border-zinc-200 text-zinc-500"
         }`}
       >
         {confirmandoExclusao ? "Toque de novo para excluir ⚠️" : "Excluir refeição"}

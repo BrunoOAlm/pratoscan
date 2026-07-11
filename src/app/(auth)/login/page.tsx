@@ -45,9 +45,9 @@ export default function LoginPage() {
       >
         <p className="text-4xl">🥗</p>
         <h1 className="mt-4 text-3xl font-bold tracking-tight">
-          Prato<span className="text-lime-400">Scan</span>
+          Prato<span className="text-emerald-500">Scan</span>
         </h1>
-        <p className="mt-2 text-zinc-400">
+        <p className="mt-2 text-zinc-500">
           Fotografe seu prato. A gente conta as calorias.
         </p>
 
@@ -71,16 +71,16 @@ export default function LoginPage() {
             required
           />
 
-          {erro && <p className="text-sm text-red-400">{erro}</p>}
+          {erro && <p className="text-sm text-red-500">{erro}</p>}
 
           <button className="botao-primario mt-2" disabled={enviando}>
             {enviando ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-zinc-400">
+        <p className="mt-8 text-center text-sm text-zinc-500">
           Ainda não tem conta?{" "}
-          <Link href="/cadastro" className="font-semibold text-lime-400">
+          <Link href="/cadastro" className="font-semibold text-emerald-600">
             Criar conta
           </Link>
         </p>

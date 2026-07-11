@@ -142,7 +142,7 @@ export default function OnboardingWizard() {
         >
           <p className="text-5xl">🎯</p>
           <h1 className="mt-6 text-2xl font-bold">Sua meta diária</h1>
-          <p className="mt-4 text-6xl font-bold tracking-tight text-lime-400">
+          <p className="mt-4 text-6xl font-bold tracking-tight text-emerald-500">
             {meta.toLocaleString("pt-BR")}
           </p>
           <p className="mt-1 text-lg text-zinc-400">kcal por dia</p>
@@ -169,13 +169,13 @@ export default function OnboardingWizard() {
       {/* Barra de progresso */}
       <div className="flex items-center gap-3">
         {passo > 0 && (
-          <button onClick={voltar} className="text-2xl text-zinc-400" aria-label="Voltar">
+          <button onClick={voltar} className="text-2xl text-zinc-500" aria-label="Voltar">
             ←
           </button>
         )}
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-100">
           <motion.div
-            className="h-full rounded-full bg-lime-400"
+            className="h-full rounded-full bg-emerald-500"
             animate={{ width: `${((passo + 1) / PASSOS.length) * 100}%` }}
             transition={{ duration: 0.3 }}
           />
@@ -257,7 +257,7 @@ export default function OnboardingWizard() {
                       onClick={() => setDados({ ...dados, nivelAtividade: op.valor })}
                     >
                       <span className="block font-semibold">{op.rotulo}</span>
-                      <span className="mt-0.5 block text-sm text-zinc-400">{op.descricao}</span>
+                      <span className="mt-0.5 block text-sm text-zinc-500">{op.descricao}</span>
                     </CartaoOpcao>
                   ))}
                 </div>
@@ -277,7 +277,7 @@ export default function OnboardingWizard() {
                         <span className="text-2xl">{op.emoji}</span>
                         <div>
                           <span className="block font-semibold">{op.rotulo}</span>
-                          <span className="mt-0.5 block text-sm text-zinc-400">{op.descricao}</span>
+                          <span className="mt-0.5 block text-sm text-zinc-500">{op.descricao}</span>
                         </div>
                       </div>
                     </CartaoOpcao>
@@ -289,7 +289,7 @@ export default function OnboardingWizard() {
         </AnimatePresence>
       </div>
 
-      {erro && <p className="mb-3 text-sm text-red-400">{erro}</p>}
+      {erro && <p className="mb-3 text-sm text-red-500">{erro}</p>}
 
       <button className="botao-primario" onClick={avancar} disabled={!passoValido() || enviando}>
         {enviando
@@ -308,7 +308,7 @@ function Titulo({ texto, subtitulo }: { texto: string; subtitulo?: string }) {
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight">{texto}</h1>
-      {subtitulo && <p className="mt-1 text-zinc-400">{subtitulo}</p>}
+      {subtitulo && <p className="mt-1 text-zinc-500">{subtitulo}</p>}
     </div>
   );
 }
@@ -336,7 +336,7 @@ function CampoNumerico(props: {
           onKeyDown={(e) => e.key === "Enter" && props.aoConfirmar()}
           autoFocus
         />
-        <span className="pb-4 text-lg text-zinc-400">{props.sufixo}</span>
+        <span className="pb-4 text-lg text-zinc-500">{props.sufixo}</span>
       </div>
     </div>
   );
@@ -354,8 +354,8 @@ function CartaoOpcao(props: {
       onClick={props.onClick}
       className={`rounded-2xl border p-4 text-left transition-colors ${
         props.selecionado
-          ? "border-lime-400/60 bg-lime-400/10 shadow-[0_0_14px_rgba(163,230,53,0.12)]"
-          : "border-white/[0.07] bg-white/[0.03] hover:border-white/20"
+          ? "border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.15)]"
+          : "border-zinc-200 bg-white hover:border-zinc-300"
       }`}
     >
       {props.children}

@@ -42,7 +42,7 @@ function Anel(props: {
           r={props.raio}
           fill="none"
           strokeWidth={props.espessura}
-          className="stroke-white/[0.07]"
+          className="stroke-zinc-100"
         />
         <motion.circle
           cx={centro}
@@ -72,12 +72,12 @@ export default function ResumoDia({ consumido, meta, macros }: Props) {
       {/* Número-herói + anel de calorias */}
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-zinc-500">
             {estourou ? "Acima da meta" : "Calorias restantes"}
           </p>
           <motion.p
             className={`mt-1 text-5xl font-bold leading-none tracking-tighter tabular-nums ${
-              estourou ? "text-orange-400" : ""
+              estourou ? "text-rose-500" : ""
             }`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -99,8 +99,8 @@ export default function ResumoDia({ consumido, meta, macros }: Props) {
           espessura={10}
           classeCor={
             estourou
-              ? "stroke-orange-400 drop-shadow-[0_0_10px_rgba(251,146,60,0.45)]"
-              : "stroke-lime-400 drop-shadow-[0_0_10px_rgba(163,230,53,0.45)]"
+              ? "stroke-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.3)]"
+              : "stroke-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]"
           }
         >
           <span className="text-2xl">🔥</span>
@@ -108,10 +108,10 @@ export default function ResumoDia({ consumido, meta, macros }: Props) {
       </div>
 
       {/* Mini-anéis dos macros — cada um com sua cor (referência) */}
-      <div className="mt-5 grid grid-cols-3 gap-3 border-t border-white/[0.06] pt-4">
-        <MiniMacro rotulo="Proteína" classeCor="stroke-sky-400" {...macros.proteina} />
-        <MiniMacro rotulo="Carbo" classeCor="stroke-emerald-400" {...macros.carbo} />
-        <MiniMacro rotulo="Gordura" classeCor="stroke-amber-400" {...macros.gordura} />
+      <div className="mt-5 grid grid-cols-3 gap-3 border-t border-zinc-100 pt-4">
+        <MiniMacro rotulo="Proteína" classeCor="stroke-sky-500" {...macros.proteina} />
+        <MiniMacro rotulo="Carbo" classeCor="stroke-emerald-500" {...macros.carbo} />
+        <MiniMacro rotulo="Gordura" classeCor="stroke-amber-500" {...macros.gordura} />
       </div>
     </section>
   );
@@ -128,8 +128,8 @@ function MiniMacro(props: {
       <Anel fracao={props.consumido / props.meta} raio={24} espessura={5} classeCor={props.classeCor}>
         <span className="text-xs font-bold tabular-nums">{Math.round(props.consumido)}</span>
       </Anel>
-      <p className="mt-1.5 text-xs font-medium text-zinc-400">{props.rotulo}</p>
-      <p className="text-[11px] text-zinc-600 tabular-nums">de {props.meta}g</p>
+      <p className="mt-1.5 text-xs font-medium text-zinc-500">{props.rotulo}</p>
+      <p className="text-[11px] text-zinc-400 tabular-nums">de {props.meta}g</p>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export default function CadastroPage() {
         transition={{ duration: 0.35 }}
       >
         <h1 className="text-3xl font-bold tracking-tight">Criar conta</h1>
-        <p className="mt-2 text-zinc-400">
+        <p className="mt-2 text-zinc-500">
           Leva menos de um minuto. Depois é só apontar a câmera pro prato.
         </p>
 
@@ -79,16 +79,16 @@ export default function CadastroPage() {
             required
           />
 
-          {erro && <p className="text-sm text-red-400">{erro}</p>}
+          {erro && <p className="text-sm text-red-500">{erro}</p>}
 
           <button className="botao-primario mt-2" disabled={enviando}>
             {enviando ? "Criando conta..." : "Criar conta"}
           </button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-zinc-400">
+        <p className="mt-8 text-center text-sm text-zinc-500">
           Já tem conta?{" "}
-          <Link href="/login" className="font-semibold text-lime-400">
+          <Link href="/login" className="font-semibold text-emerald-600">
             Entrar
           </Link>
         </p>
