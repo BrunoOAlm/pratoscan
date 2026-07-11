@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hojeNoBrasil, rotuloDoDia, somarDias } from "@/lib/datas";
 import { montarGamificacao } from "@/lib/gamificacao";
-import { corPorId } from "@/lib/avatares";
+import { animalPorId } from "@/lib/avatares";
 import PerfilGamificado from "@/components/PerfilGamificado";
 import BotaoSair from "@/components/BotaoSair";
 
@@ -77,7 +77,7 @@ export default async function PerfilPage() {
     <main className="px-6 py-8">
       <PerfilGamificado
         nome={user.nome?.split(" ")[0] ?? null}
-        cor={corPorId(user.avatar)}
+        animal={animalPorId(user.avatar)}
         gamificacao={gamificacao}
         semana={semana}
         meta={meta}

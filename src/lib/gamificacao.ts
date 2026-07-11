@@ -77,7 +77,7 @@ export interface EstagioMascote {
 }
 
 const ESTAGIOS: { numero: 1 | 2 | 3 | 4 | 5; nome: string; nivelMinimo: number }[] = [
-  { numero: 1, nome: "Ovo", nivelMinimo: 1 },
+  { numero: 1, nome: "Bebê", nivelMinimo: 1 },
   { numero: 2, nome: "Filhote", nivelMinimo: 2 },
   { numero: 3, nome: "Jovem", nivelMinimo: 4 },
   { numero: 4, nome: "Adulto", nivelMinimo: 7 },

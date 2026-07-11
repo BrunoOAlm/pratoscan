@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { CORES_MASCOTE } from "@/lib/avatares";
+import { ANIMAIS_MASCOTE } from "@/lib/avatares";
 
-// PATCH /api/perfil — troca a cor do mascote do usuário
+// PATCH /api/perfil — troca o animal-mascote do usuário
 export async function PATCH(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -16,8 +16,8 @@ export async function PATCH(request: Request) {
   } catch {
     return NextResponse.json({ erro: "Requisição inválida." }, { status: 400 });
   }
-  if (!CORES_MASCOTE.some((c) => c.id === body.avatar)) {
-    return NextResponse.json({ erro: "Cor inválida." }, { status: 400 });
+  if (!ANIMAIS_MASCOTE.some((a) => a.id === body.avatar)) {
+    return NextResponse.json({ erro: "Animal inválido." }, { status: 400 });
   }
 
   await prisma.user.update({

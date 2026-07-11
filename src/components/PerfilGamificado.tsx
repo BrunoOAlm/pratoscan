@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
-import { CORES_MASCOTE, type CorMascote } from "@/lib/avatares";
+import { ANIMAIS_MASCOTE, type AnimalMascote } from "@/lib/avatares";
 import { estagioDoMascote, type Gamificacao } from "@/lib/gamificacao";
 import Mascote, { type HumorMascote } from "@/components/Mascote";
 
@@ -24,7 +24,7 @@ interface DiaSemana {
 
 interface Props {
   nome: string | null;
-  cor: CorMascote;
+  animal: AnimalMascote;
   gamificacao: Gamificacao;
   semana: DiaSemana[];
   meta: number;
@@ -39,8 +39,12 @@ function humorDoMascote(g: Gamificacao): HumorMascote {
 // Falas por estado — uma aleatória a cada toque
 function falasDoMascote(g: Gamificacao, nome: string | null, estagioNome: string): string[] {
   const oi = nome ?? "você";
-  if (estagioNome === "Ovo") {
-    return ["Registra refeições que eu saio do ovo! 🥚", "Tá quentinho aqui... mas quero nascer! 🐣"];
+  if (estagioNome === "Bebê") {
+    return [
+      "Sou só um bebê... me alimenta direitinho! 🍼",
+      "Registra refeições que eu cresço rapidinho 🌱",
+      `Cuida de mim, ${oi}! 🥺`,
+    ];
   }
   if (!g.registrouHoje) {
     return [
@@ -69,7 +73,7 @@ interface Particula {
   emoji: string;
 }
 
-export default function PerfilGamificado({ nome, cor, gamificacao, semana, meta }: Props) {
+export default function PerfilGamificado({ nome, animal, gamificacao, semana, meta }: Props) {
   const router = useRouter();
   const [escopo, animar] = useAnimate();
   const estagio = estagioDoMascote(gamificacao.nivel);
@@ -95,13 +99,13 @@ export default function PerfilGamificado({ nome, cor, gamificacao, semana, meta 
     setFala(falas[Math.floor(Math.random() * falas.length)]);
   }
 
-  async function trocarCor(nova: CorMascote) {
+  async function trocarAnimal(novo: AnimalMascote) {
     if (salvandoCor) return;
     setSalvandoCor(true);
     const resposta = await fetch("/api/perfil", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ avatar: nova.id }),
+      body: JSON.stringify({ avatar: novo.id }),
     });
     setSalvandoCor(false);
     if (resposta.ok) {
@@ -155,7 +159,7 @@ export default function PerfilGamificado({ nome, cor, gamificacao, semana, meta 
           </div>
           <button type="button" onClick={cutucar} aria-label="Cutucar o mascote" className="w-full">
             <span ref={escopo} className="block">
-              <Mascote cor={cor} estagio={estagio.numero} humor={humorDoMascote(gamificacao)} tamanho={150} />
+              <Mascote animal={animal} estagio={estagio.numero} humor={humorDoMascote(gamificacao)} tamanho={150} />
             </span>
           </button>
         </div>
@@ -192,10 +196,10 @@ export default function PerfilGamificado({ nome, cor, gamificacao, semana, meta 
           onClick={() => setEscolhendo(!escolhendo)}
           className="mt-4 text-xs font-medium text-emerald-600"
         >
-          {escolhendo ? "fechar" : "trocar cor do mascote"}
+          {escolhendo ? "fechar" : "trocar de bichinho"}
         </button>
 
-        {/* Escolha da cor */}
+        {/* Escolha do animal — miniaturas de verdade, não bolinhas de cor */}
         <AnimatePresence>
           {escolhendo && (
             <motion.div
@@ -204,22 +208,20 @@ export default function PerfilGamificado({ nome, cor, gamificacao, semana, meta 
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-3 grid grid-cols-6 gap-2">
-                {CORES_MASCOTE.map((c) => (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {ANIMAIS_MASCOTE.map((a) => (
                   <button
-                    key={c.id}
+                    key={a.id}
                     type="button"
                     disabled={salvandoCor}
-                    onClick={() => trocarCor(c)}
-                    aria-label={`Cor ${c.nome}`}
-                    className={`flex items-center justify-center rounded-2xl border py-2 transition active:scale-90 ${
-                      c.id === cor.id ? "border-emerald-500/60 bg-emerald-500/10" : "border-zinc-200 bg-white"
+                    onClick={() => trocarAnimal(a)}
+                    aria-label={`Escolher ${a.nome}`}
+                    className={`flex flex-col items-center rounded-2xl border px-1 py-2 transition active:scale-95 ${
+                      a.id === animal.id ? "border-emerald-500/60 bg-emerald-500/10" : "border-zinc-200 bg-white"
                     }`}
                   >
-                    <span
-                      className="h-7 w-7 rounded-full border-2"
-                      style={{ background: c.principal, borderColor: c.escuro }}
-                    />
+                    <Mascote animal={a} estagio={estagio.numero} humor="feliz" tamanho={56} estatico />
+                    <span className="mt-1 text-[11px] font-medium text-zinc-500">{a.nome}</span>
                   </button>
                 ))}
               </div>
