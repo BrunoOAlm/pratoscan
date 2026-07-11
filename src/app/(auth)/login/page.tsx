@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
+import MosaicoDeComida from "@/components/MosaicoDeComida";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,12 +40,21 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-10">
+      <MosaicoDeComida />
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
+        className="rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur-md sm:p-8"
       >
-        <p className="text-4xl">🥗</p>
+        <Image
+          src="/icons/icone-192.png"
+          alt="Logo do PratoScan"
+          width={64}
+          height={64}
+          className="drop-shadow-sm"
+          priority
+        />
         <h1 className="mt-4 text-3xl font-bold tracking-tight">
           Prato<span className="text-emerald-500">Scan</span>
         </h1>
@@ -51,7 +62,7 @@ export default function LoginPage() {
           Fotografe seu prato. A gente conta as calorias.
         </p>
 
-        <form onSubmit={entrar} className="mt-10 flex flex-col gap-3">
+        <form onSubmit={entrar} className="mt-8 flex flex-col gap-3">
           <input
             className="campo"
             type="email"
@@ -78,7 +89,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-zinc-500">
+        <p className="mt-6 text-center text-sm text-zinc-500">
           Ainda não tem conta?{" "}
           <Link href="/cadastro" className="font-semibold text-emerald-600">
             Criar conta
