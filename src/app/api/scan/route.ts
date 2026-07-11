@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { ApiError } from "@google/genai";
 import { auth } from "@/auth";
 import {
   analisarPrato,
@@ -59,14 +59,15 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ alimentos: analise.alimentos });
   } catch (e) {
-    if (e instanceof Anthropic.RateLimitError || e instanceof Anthropic.InternalServerError) {
-      return NextResponse.json(
-        { erro: "Serviço de análise ocupado. Tente de novo em instantes." },
-        { status: 503 },
-      );
-    }
-    if (e instanceof Anthropic.APIError) {
-      console.error("Erro da API Anthropic no scan:", e.status, e.message);
+    if (e instanceof ApiError) {
+      // 429 = limite de requisições do tier gratuito (10/min) — passa em instantes
+      if (e.status === 429 || e.status >= 500) {
+        return NextResponse.json(
+          { erro: "Serviço de análise ocupado. Tente de novo em instantes." },
+          { status: 503 },
+        );
+      }
+      console.error("Erro da API Gemini no scan:", e.status, e.message);
       return NextResponse.json(
         { erro: "Não foi possível analisar a foto agora." },
         { status: 502 },

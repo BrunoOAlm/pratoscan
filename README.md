@@ -9,7 +9,7 @@ App mobile-first em português (pt-BR), pensado para o contexto brasileiro: a IA
 ## ✨ Como funciona
 
 1. **Onboarding** — um wizard animado coleta peso, altura, idade, sexo, nível de atividade e objetivo. O servidor calcula a TMB com a fórmula **Mifflin-St Jeor**, aplica o fator de atividade e ajusta pelo objetivo (perder −500 kcal / ganhar +300 kcal) para definir a meta diária.
-2. **Scan** — a foto é comprimida no client (~1024px) e enviada ao backend, que chama a **API da Anthropic (Claude)** com visão + saída estruturada. A resposta volta como JSON validado com Zod: cada alimento com porção, calorias e macros.
+2. **Scan** — a foto é comprimida no client (~1024px) e enviada ao backend, que chama a **API do Gemini** com visão + saída estruturada. A resposta volta como JSON validado com Zod: cada alimento com porção, calorias e macros. Também dá pra digitar o alimento ("pão com requeijão") e a IA estima os valores.
 3. **Revisão** — antes de salvar, o usuário ajusta porções com um stepper (recalcula tudo proporcionalmente), remove itens errados ou adiciona alimentos manualmente.
 4. **Diário** — as refeições ficam registradas por dia, comparadas com a meta de calorias e a distribuição de macros (30% proteína / 40% carbo / 30% gordura).
 
@@ -21,19 +21,19 @@ App mobile-first em português (pt-BR), pensado para o contexto brasileiro: a IA
 | UI | Tailwind CSS + Framer Motion (dark mode, mobile-first) |
 | Banco | PostgreSQL no [Neon](https://neon.tech) via Prisma (connection pooling) |
 | Auth | Auth.js (NextAuth v5) com credentials + sessão JWT |
-| IA de visão | API da Anthropic (`messages.parse` com saída estruturada via Zod) |
+| IA de visão | API do Gemini (saída estruturada validada com Zod) — tier gratuito |
 | CI | GitHub Actions — lint, typecheck e build a cada push |
 
 ## 🔒 Decisões de engenharia
 
-- **A chave da IA nunca chega ao client** — a chamada à Anthropic acontece só em Route Handler no servidor.
+- **A chave da IA nunca chega ao client** — a chamada ao Gemini acontece só em Route Handler no servidor.
 - **O servidor é a fonte de verdade** — totais da refeição e meta calórica são sempre recalculados no backend; o client só exibe. Todo payload passa por validação com faixas de sanidade (pega tanto request adulterado quanto estimativa absurda da IA).
 - **Custo controlado** — a foto é redimensionada e re-encodada como JPEG no client antes do upload (menos tokens de visão, menos banda em 4G) e é processada e descartada: nenhuma imagem é armazenada.
 - **Resposta da IA validada, não confiada** — schema Zod na saída estruturada; se a foto não for comida, o modelo sinaliza e o app responde com erro amigável em vez de inventar dados.
 
 ## 🚀 Rodando localmente
 
-Pré-requisitos: Node 22+, um banco Postgres no [Neon](https://neon.tech) (plano gratuito) e uma chave da [API da Anthropic](https://platform.claude.com).
+Pré-requisitos: Node 22+, um banco Postgres no [Neon](https://neon.tech) (plano gratuito) e uma chave gratuita da [API do Gemini](https://aistudio.google.com/apikey) (sem cartão de crédito).
 
 ```bash
 git clone https://github.com/BrunoOAlm/pratoscan.git

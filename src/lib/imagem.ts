@@ -2,7 +2,7 @@
 // Compressão de foto no CLIENT antes do upload para /api/scan.
 //
 // Por que comprimir aqui e não no servidor?
-//   1. Tokens: a API da Anthropic cobra por tamanho de imagem — ~1024px no
+//   1. Cota: a API de visão conta tokens por tamanho de imagem — ~1024px no
 //      maior lado é o suficiente para identificar os alimentos.
 //   2. Rede: foto de celular moderno tem 5–15 MB; comprimida vira ~100–300 KB,
 //      o que importa muito em 4G.

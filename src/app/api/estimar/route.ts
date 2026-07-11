@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { ApiError } from "@google/genai";
 import { auth } from "@/auth";
 import { estimarAlimento } from "@/lib/estimativa";
 
@@ -50,14 +50,15 @@ export async function POST(request: Request) {
       gordura: estimativa.gordura,
     });
   } catch (e) {
-    if (e instanceof Anthropic.RateLimitError || e instanceof Anthropic.InternalServerError) {
-      return NextResponse.json(
-        { erro: "Serviço ocupado. Tente de novo em instantes." },
-        { status: 503 },
-      );
-    }
-    if (e instanceof Anthropic.APIError) {
-      console.error("Erro da API Anthropic na estimativa:", e.status, e.message);
+    if (e instanceof ApiError) {
+      // 429 = limite de requisições do tier gratuito (10/min) — passa em instantes
+      if (e.status === 429 || e.status >= 500) {
+        return NextResponse.json(
+          { erro: "Serviço ocupado. Tente de novo em instantes." },
+          { status: 503 },
+        );
+      }
+      console.error("Erro da API Gemini na estimativa:", e.status, e.message);
       return NextResponse.json({ erro: "Não foi possível estimar agora." }, { status: 502 });
     }
     throw e;

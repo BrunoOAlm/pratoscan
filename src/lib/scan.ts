@@ -1,10 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { gemini, MODELO_GEMINI, schemaParaGemini, validarResposta } from "@/lib/gemini";
 
 // ============================================================================
-// Análise de foto de prato com a API da Claude (visão + saída estruturada).
-// Roda SOMENTE no servidor — a chave ANTHROPIC_API_KEY nunca chega ao client.
+// Análise de foto de prato com a API do Gemini (visão + saída estruturada).
+// Roda SOMENTE no servidor — a chave GEMINI_API_KEY nunca chega ao client.
 // ============================================================================
 
 export const MEDIA_TYPES_ACEITOS = ["image/jpeg", "image/png", "image/webp"] as const;
@@ -39,40 +38,29 @@ Regras:
 - Seja realista nas estimativas de quantidade: considere o tamanho aparente do prato e dos utensílios.
 - Se a imagem não contiver comida, ou estiver impossível de identificar, retorne ehComida=false e alimentos=[].`;
 
-const client = new Anthropic(); // lê ANTHROPIC_API_KEY do ambiente
-
 export async function analisarPrato(
   imagemBase64: string,
   mediaType: MediaTypeAceito,
 ): Promise<AnalisePrato | null> {
-  const response = await client.messages.parse({
-    model: "claude-opus-4-8",
-    max_tokens: 4096,
-    // Adaptive thinking melhora a estimativa de porções; effort "medium"
-    // segura a latência — o usuário está esperando com a câmera na mão.
-    thinking: { type: "adaptive" },
-    output_config: {
-      effort: "medium",
-      format: zodOutputFormat(AnalisePrato),
-    },
-    system: SYSTEM_PROMPT,
-    messages: [
+  const interacao = await gemini.interactions.create({
+    model: MODELO_GEMINI,
+    system_instruction: SYSTEM_PROMPT,
+    input: [
+      { type: "image", data: imagemBase64, mime_type: mediaType },
       {
-        role: "user",
-        content: [
-          {
-            type: "image",
-            source: { type: "base64", media_type: mediaType, data: imagemBase64 },
-          },
-          {
-            type: "text",
-            text: "Identifique os alimentos deste prato e estime as calorias e os macronutrientes de cada um.",
-          },
-        ],
+        type: "text",
+        text: "Identifique os alimentos deste prato e estime as calorias e os macronutrientes de cada um.",
       },
     ],
+    // Saída estruturada: o modelo é obrigado a responder JSON no formato
+    // do schema — sem isso ele poderia devolver texto livre.
+    response_format: {
+      type: "text",
+      mime_type: "application/json",
+      schema: schemaParaGemini(AnalisePrato),
+    },
   });
 
-  // parsed_output é null se o modelo recusou ou a resposta não validou
-  return response.parsed_output;
+  // null se a resposta veio vazia ou não validou contra o schema
+  return validarResposta(AnalisePrato, interacao.output_text);
 }
