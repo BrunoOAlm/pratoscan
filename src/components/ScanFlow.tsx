@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { comprimirImagem } from "@/lib/imagem";
+import { consumirFotoPendente, EVENTO_FOTO_PENDENTE } from "@/lib/foto-pendente";
 
 // ============================================================================
 // Fluxo completo do scan em 3 fases:
@@ -68,7 +69,9 @@ export default function ScanFlow() {
   const [salvando, setSalvando] = useState(false);
   const proximoId = useRef(1);
 
-  async function analisarFoto(arquivo: File) {
+  // useCallback com deps vazias: a função só usa setters e refs (estáveis),
+  // e precisa de identidade fixa para o efeito da foto pendente abaixo
+  const analisarFoto = useCallback(async (arquivo: File) => {
     setErro(null);
     setFase("analisando");
     try {
@@ -98,7 +101,19 @@ export default function ScanFlow() {
       // Permite escolher o MESMO arquivo de novo (onChange não dispara se o valor não muda)
       if (inputRef.current) inputRef.current.value = "";
     }
-  }
+  }, []);
+
+  // Foto vinda do botão da bottom nav: consome ao montar (navegou até aqui
+  // com a foto já tirada) e escuta o evento (já estava nesta tela)
+  useEffect(() => {
+    const tentar = () => {
+      const foto = consumirFotoPendente();
+      if (foto) analisarFoto(foto);
+    };
+    tentar();
+    window.addEventListener(EVENTO_FOTO_PENDENTE, tentar);
+    return () => window.removeEventListener(EVENTO_FOTO_PENDENTE, tentar);
+  }, [analisarFoto]);
 
   function ajustarMultiplicador(id: number, delta: number) {
     setItens((atual) =>
