@@ -9,7 +9,8 @@
 //     diário sempre frescos.
 // ============================================================================
 
-const CACHE = "pratoscan-estatico-v1";
+// v2: logo nova — mudar o nome do cache descarta os ícones antigos cacheados
+const CACHE = "pratoscan-estatico-v2";
 
 self.addEventListener("install", () => {
   // Ativa a versão nova do SW imediatamente, sem esperar as abas fecharem

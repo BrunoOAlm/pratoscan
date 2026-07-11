@@ -14,12 +14,18 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#ffffff",
     theme_color: "#ffffff",
     icons: [
+      // maskable: a arte fica a 82% sobre fundo verde — o recorte em
+      // círculo/squircle do Android não corta a moldura de scan da logo
       {
-        src: "/icons/icone-192.png",
+        src: "/icons/icone-maskable-192.png",
         sizes: "192x192",
         type: "image/png",
-        // A arte respeita a zona segura de 80%, então o mesmo arquivo serve
-        // para "any" e para "maskable" (Android recorta em círculo/squircle)
+        purpose: "maskable",
+      },
+      {
+        src: "/icons/icone-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
         purpose: "maskable",
       },
       { src: "/icons/icone-192.png", sizes: "192x192", type: "image/png" },
