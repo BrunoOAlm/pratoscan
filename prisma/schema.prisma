@@ -56,9 +56,10 @@ model User {
   nivelAtividade NivelAtividade?
   objetivo       Objetivo?
   metaCalorias   Int?
-  // Personagem-mascote escolhido no perfil (emoji). Foto própria fica para
-  // quando houver storage de imagens (pós-v1).
+  // Animal-mascote ativo (id de lib/avatares) e roupas equipadas nele
+  // (JSON de ids de lib/roupas — desbloqueadas por conquistas)
   avatar         String?
+  roupas         String?
   criadoEm       DateTime        @default(now())
   refeicoes      Meal[]
 }

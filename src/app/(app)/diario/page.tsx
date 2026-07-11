@@ -14,6 +14,7 @@ import ResumoDia from "@/components/ResumoDia";
 import MascoteDoDia from "@/components/MascoteDoDia";
 import { calcularStreak, diasComRegistro, progressoDoAnimal } from "@/lib/gamificacao";
 import { ANIMAL_PADRAO, animalPorId } from "@/lib/avatares";
+import { roupasEquipadas } from "@/lib/roupas";
 import type { TipoRefeicao } from "@prisma/client";
 
 // Cada tipo de refeição tem sua cor (referência de design): o tile do emoji
@@ -61,7 +62,7 @@ export default async function DiarioPage({
   const [user, refeicoes, datasParaStreak, refeicoesPorMascote] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: session!.user.id },
-      select: { metaCalorias: true, nome: true, avatar: true },
+      select: { metaCalorias: true, nome: true, avatar: true, roupas: true },
     }),
     prisma.meal.findMany({
       where: { userId: session!.user.id, dataHora: { gte: inicio, lt: fim } },
@@ -164,6 +165,7 @@ export default async function DiarioPage({
           nome={user.nome?.split(" ")[0] ?? null}
           animal={animalAtivo}
           progresso={progressoAtivo}
+          roupas={roupasEquipadas(user.roupas)}
           estado={{ registrouHoje, streak }}
         />
       </div>

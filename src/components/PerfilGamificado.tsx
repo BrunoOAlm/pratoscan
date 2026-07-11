@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import type { AnimalMascote } from "@/lib/avatares";
 import type { Gamificacao, ProgressoAnimal } from "@/lib/gamificacao";
 import { falaAleatoria, falasDoMascote, humorDoMascote } from "@/lib/mascote-humor";
+import { ROUPAS, type DadosDesbloqueio } from "@/lib/roupas";
 import Mascote from "@/components/Mascote";
 
 // ============================================================================
@@ -35,6 +36,9 @@ interface Props {
   progresso: ProgressoAnimal;
   colecao: ItemColecao[];
   gamificacao: Gamificacao;
+  /** Ids das roupas equipadas + dados para saber o que está desbloqueado */
+  roupas: string[];
+  desbloqueio: DadosDesbloqueio;
   semana: DiaSemana[];
   meta: number;
 }
@@ -45,13 +49,24 @@ interface Particula {
   emoji: string;
 }
 
-export default function PerfilGamificado({ nome, animal, progresso, colecao, gamificacao, semana, meta }: Props) {
+export default function PerfilGamificado({
+  nome,
+  animal,
+  progresso,
+  colecao,
+  gamificacao,
+  roupas,
+  desbloqueio,
+  semana,
+  meta,
+}: Props) {
   const router = useRouter();
   const [escopo, animar] = useAnimate();
   const estagio = progresso.estagio;
   const [fala, setFala] = useState(() => falasDoMascote(gamificacao, nome, estagio.nome)[0]);
   const [escolhendo, setEscolhendo] = useState(false);
   const [salvandoCor, setSalvandoCor] = useState(false);
+  const [salvandoRoupa, setSalvandoRoupa] = useState(false);
   const [particulas, setParticulas] = useState<Particula[]>([]);
 
   // Toque no mascote: pulo + partículas + fala nova
@@ -83,6 +98,24 @@ export default function PerfilGamificado({ nome, animal, progresso, colecao, gam
       setEscolhendo(false);
       router.refresh();
     }
+  }
+
+  // Equipar/desequipar: monta a lista nova (1 peça por slot) e o servidor
+  // valida o desbloqueio de novo antes de salvar
+  async function alternarRoupa(id: string) {
+    if (salvandoRoupa) return;
+    const peca = ROUPAS.find((r) => r.id === id)!;
+    const novas = roupas.includes(id)
+      ? roupas.filter((r) => r !== id)
+      : [...roupas.filter((r) => ROUPAS.find((x) => x.id === r)?.slot !== peca.slot), id];
+    setSalvandoRoupa(true);
+    const resposta = await fetch("/api/perfil", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roupas: novas }),
+    });
+    setSalvandoRoupa(false);
+    if (resposta.ok) router.refresh();
   }
 
   const conquistadas = gamificacao.conquistas.filter((c) => c.conquistada).length;
@@ -130,7 +163,13 @@ export default function PerfilGamificado({ nome, animal, progresso, colecao, gam
           </div>
           <button type="button" onClick={cutucar} aria-label="Cutucar o mascote" className="w-full">
             <span ref={escopo} className="block">
-              <Mascote animal={animal} estagio={estagio.numero} humor={humorDoMascote(gamificacao)} tamanho={150} />
+              <Mascote
+                animal={animal}
+                estagio={estagio.numero}
+                humor={humorDoMascote(gamificacao)}
+                roupas={roupas}
+                tamanho={150}
+              />
             </span>
           </button>
         </div>
@@ -206,6 +245,48 @@ export default function PerfilGamificado({ nome, animal, progresso, colecao, gam
             </motion.div>
           )}
         </AnimatePresence>
+      </section>
+
+      {/* Guarda-roupa: peças desbloqueadas por conquistas, 1 por slot */}
+      <section className="cartao p-5">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-lg font-bold tracking-tight">Guarda-roupa</h2>
+          <span className="text-xs text-zinc-400">toque para vestir</span>
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {ROUPAS.map((peca) => {
+            const liberada = peca.desbloqueada(desbloqueio);
+            const vestida = roupas.includes(peca.id);
+            return (
+              <button
+                key={peca.id}
+                type="button"
+                disabled={!liberada || salvandoRoupa}
+                onClick={() => alternarRoupa(peca.id)}
+                title={liberada ? peca.nome : peca.requisito}
+                className={`flex flex-col items-center rounded-2xl border px-2 py-3 text-center transition active:scale-95 ${
+                  vestida
+                    ? "border-emerald-500/60 bg-emerald-500/10"
+                    : liberada
+                      ? "border-zinc-200 bg-white"
+                      : "border-zinc-200 bg-zinc-50 opacity-55 grayscale"
+                }`}
+              >
+                <span className="text-2xl">{liberada ? peca.emoji : "🔒"}</span>
+                <span
+                  className={`mt-1 text-[11px] font-semibold leading-tight ${
+                    vestida ? "text-emerald-700" : "text-zinc-600"
+                  }`}
+                >
+                  {peca.nome}
+                </span>
+                <span className="text-[10px] text-zinc-400">
+                  {vestida ? "vestido ✓" : liberada ? "vestir" : peca.requisito}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       {/* Conquistas — dourado é a cor delas */}

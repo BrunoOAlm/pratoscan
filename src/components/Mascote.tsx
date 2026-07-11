@@ -25,13 +25,15 @@ interface Props {
   animal: AnimalMascote;
   estagio: 1 | 2 | 3 | 4 | 5;
   humor: HumorMascote;
+  /** Ids das roupas equipadas (lib/roupas) */
+  roupas?: string[];
   /** Lado do quadrado em px */
   tamanho?: number;
   /** Desliga piscada/olhar (miniaturas do seletor) */
   estatico?: boolean;
 }
 
-export default function Mascote({ animal, estagio, humor, tamanho = 150, estatico = false }: Props) {
+export default function Mascote({ animal, estagio, humor, roupas = [], tamanho = 150, estatico = false }: Props) {
   const areaRef = useRef<HTMLDivElement>(null);
   const [piscando, setPiscando] = useState(false);
   const [olhar, setOlhar] = useState({ x: 0, y: 0 }); // deslocamento das pupilas
@@ -71,7 +73,7 @@ export default function Mascote({ animal, estagio, humor, tamanho = 150, estatic
 
   const conteudo = (
     <g transform={`translate(100 178) scale(${escala}) translate(-100 -178)`}>
-      <Bicho animal={animal} estagio={estagio} humor={humor} piscando={piscando} olhar={olhar} />
+      <Bicho animal={animal} estagio={estagio} humor={humor} roupas={roupas} piscando={piscando} olhar={olhar} />
     </g>
   );
 
@@ -106,11 +108,16 @@ function Bicho(props: {
   animal: AnimalMascote;
   estagio: 1 | 2 | 3 | 4 | 5;
   humor: HumorMascote;
+  roupas: string[];
   piscando: boolean;
   olhar: { x: number; y: number };
 }) {
-  const { animal, estagio, humor } = props;
+  const { animal, estagio, humor, roupas } = props;
   const bebe = estagio === 1;
+  const tem = (id: string) => roupas.includes(id);
+  // A coroa do Lendário domina a cabeça; roupas de cabeça só até o estágio 4
+  const roupaCabeca = estagio < 5;
+  const temPescoco = tem("lacinho") || tem("cachecol") || tem("medalha");
 
   return (
     <g>
@@ -207,8 +214,8 @@ function Bicho(props: {
         />
       )}
 
-      {/* Bandana — Jovem em diante (o bichinho "conquistou" o acessório) */}
-      {estagio >= 3 && estagio < 5 && (
+      {/* Bandana — Jovem em diante; sai de cena se houver roupa no pescoço */}
+      {estagio >= 3 && estagio < 5 && !temPescoco && (
         <g>
           <path
             d="M62 148 C 78 158 122 158 138 148 L 134 160 C 118 168 82 168 66 160 Z"
@@ -217,6 +224,74 @@ function Bicho(props: {
             opacity="0.9"
           />
           <path d="M134 158 l10 8 -4 -12 Z" fill={animal.id === "cachorro" || animal.id === "urso" ? "#b91c1c" : "#047857"} />
+        </g>
+      )}
+
+      {/* ------ Guarda-roupa (desbloqueado por conquistas) ------ */}
+
+      {/* Cachecol */}
+      {tem("cachecol") && (
+        <g>
+          <path
+            d="M60 146 C 78 157 122 157 140 146 L 137 160 C 120 169 80 169 63 160 Z"
+            fill="#dc2626"
+          />
+          <rect x="118" y="156" width="14" height="26" rx="4" fill="#dc2626" />
+          <g stroke="#b91c1c" strokeWidth="2">
+            <line x1="121" y1="176" x2="121" y2="182" />
+            <line x1="125" y1="176" x2="125" y2="182" />
+            <line x1="129" y1="176" x2="129" y2="182" />
+          </g>
+        </g>
+      )}
+
+      {/* Lacinho */}
+      {tem("lacinho") && (
+        <g fill="#ec4899" stroke="#be185d" strokeWidth="2" strokeLinejoin="round">
+          <path d="M100 152 L 82 143 L 82 161 Z" />
+          <path d="M100 152 L 118 143 L 118 161 Z" />
+          <circle cx="100" cy="152" r="5" fill="#db2777" />
+        </g>
+      )}
+
+      {/* Medalha de ouro (dourado = conquista) */}
+      {tem("medalha") && (
+        <g>
+          <path d="M88 148 L 100 164 L 112 148" fill="none" stroke="#2563eb" strokeWidth="5" />
+          <circle cx="100" cy="167" r="9" fill="#fbbf24" stroke="#d97706" strokeWidth="2" />
+          <path d="M100 162 l1.6 3.2 3.6 .5 -2.6 2.5 .6 3.6 -3.2 -1.7 -3.2 1.7 .6 -3.6 -2.6 -2.5 3.6 -.5 Z" fill="#d97706" />
+        </g>
+      )}
+
+      {/* Óculos escuros */}
+      {tem("oculos") && (
+        <g>
+          <rect x="64" y="86" width="28" height="20" rx="9" fill="#27272a" opacity="0.9" />
+          <rect x="108" y="86" width="28" height="20" rx="9" fill="#27272a" opacity="0.9" />
+          <line x1="92" y1="94" x2="108" y2="94" stroke="#27272a" strokeWidth="4" />
+          <line x1="64" y1="92" x2="48" y2="86" stroke="#27272a" strokeWidth="4" strokeLinecap="round" />
+          <line x1="136" y1="92" x2="152" y2="86" stroke="#27272a" strokeWidth="4" strokeLinecap="round" />
+          <rect x="70" y="89" width="9" height="5" rx="2.5" fill="#fff" opacity="0.25" />
+          <rect x="114" y="89" width="9" height="5" rx="2.5" fill="#fff" opacity="0.25" />
+        </g>
+      )}
+
+      {/* Chapéu de chef */}
+      {roupaCabeca && tem("chapeu-chef") && (
+        <g>
+          <circle cx="82" cy="34" r="13" fill="#fff" stroke="#d4d4d8" strokeWidth="2" />
+          <circle cx="100" cy="28" r="15" fill="#fff" stroke="#d4d4d8" strokeWidth="2" />
+          <circle cx="118" cy="34" r="13" fill="#fff" stroke="#d4d4d8" strokeWidth="2" />
+          <rect x="76" y="36" width="48" height="18" rx="3" fill="#fff" stroke="#d4d4d8" strokeWidth="2" />
+        </g>
+      )}
+
+      {/* Boné */}
+      {roupaCabeca && tem("bone") && (
+        <g>
+          <path d="M68 54 A 32 26 0 0 1 132 54 L 132 58 L 68 58 Z" fill="#059669" stroke="#047857" strokeWidth="2" />
+          <path d="M100 48 L 100 58 L 148 58 A 8 8 0 0 0 144 46 C 130 42 112 44 100 48 Z" fill="#047857" />
+          <circle cx="100" cy="38" r="4" fill="#34d399" stroke="#047857" strokeWidth="1.5" />
         </g>
       )}
     </g>

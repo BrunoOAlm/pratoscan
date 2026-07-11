@@ -18,10 +18,11 @@ interface Props {
   nome: string | null;
   animal: AnimalMascote;
   progresso: ProgressoAnimal;
+  roupas: string[];
   estado: EstadoMascote; // registrouHoje + streak
 }
 
-export default function MascoteDoDia({ nome, animal, progresso, estado }: Props) {
+export default function MascoteDoDia({ nome, animal, progresso, roupas, estado }: Props) {
   const [escopo, animar] = useAnimate();
   const [fala, setFala] = useState(() => falaAleatoria(estado, nome, progresso.estagio.nome));
 
@@ -34,7 +35,13 @@ export default function MascoteDoDia({ nome, animal, progresso, estado }: Props)
     <section className="cartao entrada flex items-center gap-3 p-4">
       <button type="button" onClick={cutucar} aria-label="Cutucar o mascote" className="shrink-0">
         <span ref={escopo} className="block">
-          <Mascote animal={animal} estagio={progresso.estagio.numero} humor={humorDoMascote(estado)} tamanho={96} />
+          <Mascote
+            animal={animal}
+            estagio={progresso.estagio.numero}
+            humor={humorDoMascote(estado)}
+            roupas={roupas}
+            tamanho={96}
+          />
         </span>
       </button>
 

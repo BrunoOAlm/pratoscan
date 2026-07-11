@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { hojeNoBrasil, rotuloDoDia, somarDias } from "@/lib/datas";
 import { montarGamificacao, progressoDoAnimal } from "@/lib/gamificacao";
 import { ANIMAIS_MASCOTE, ANIMAL_PADRAO, animalPorId } from "@/lib/avatares";
+import { roupasEquipadas } from "@/lib/roupas";
 import PerfilGamificado from "@/components/PerfilGamificado";
 import BotaoSair from "@/components/BotaoSair";
 
@@ -95,6 +96,12 @@ export default async function PerfilPage() {
         progresso={progressoAtivo}
         colecao={colecao}
         gamificacao={gamificacao}
+        roupas={roupasEquipadas(user.roupas)}
+        desbloqueio={{
+          totalRefeicoes: refeicoes.length,
+          streak: gamificacao.streak,
+          bateuMetaAlgumDia,
+        }}
         semana={semana}
         meta={meta}
       />
