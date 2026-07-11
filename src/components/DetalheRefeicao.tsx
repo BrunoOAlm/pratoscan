@@ -4,10 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import FormAdicionarAlimento, { type NovoAlimento } from "@/components/FormAdicionarAlimento";
 
 // ============================================================================
 // Detalhe da refeição com edição:
 //   - trocar o tipo (café/almoço/jantar/lanche)     → PATCH /api/refeicoes/[id]
+//   - adicionar um alimento depois de salvar        → POST .../itens
 //   - remover um alimento                           → DELETE .../itens/[itemId]
 //   - excluir a refeição inteira (com confirmação)  → DELETE /api/refeicoes/[id]
 // Após cada ação, router.refresh() re-busca os dados no servidor — o client
@@ -96,6 +98,19 @@ export default function DetalheRefeicao({ refeicao }: Props) {
     } else {
       router.refresh();
     }
+  }
+
+  // Adicionar um alimento numa refeição já salva (ex.: esqueceu a bebida).
+  // Devolve true pro formulário limpar e fechar só quando o servidor confirmou.
+  async function adicionarItem(item: NovoAlimento): Promise<boolean> {
+    if (ocupado) return false;
+    const ok = await chamarApi(`/api/refeicoes/${refeicao.id}/itens`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    });
+    if (ok) router.refresh();
+    return ok !== null;
   }
 
   async function excluirRefeicao() {
@@ -213,6 +228,9 @@ export default function DetalheRefeicao({ refeicao }: Props) {
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Esqueceu algo? Dá pra completar a refeição depois de salvar */}
+      <FormAdicionarAlimento aoAdicionar={adicionarItem} />
 
       {erro && <p className="mt-4 text-sm text-red-500">{erro}</p>}
 
