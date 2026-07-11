@@ -65,6 +65,31 @@ export function calcularNivel(xp: number): { nivel: number; xpNoNivel: number; x
   return { nivel, xpNoNivel: restante, xpParaSubir: custo };
 }
 
+// --- Crescimento do mascote (inspiração: Finch) -----------------------------
+// O bichinho evolui com o NÍVEL — que vem do hábito de registrar refeições.
+// Manter o hábito = ver o mascote crescer.
+
+export interface EstagioMascote {
+  numero: 1 | 2 | 3 | 4 | 5;
+  nome: string;
+  /** Nível em que o PRÓXIMO estágio chega (null = estágio final) */
+  proximoNivel: number | null;
+}
+
+const ESTAGIOS: { numero: 1 | 2 | 3 | 4 | 5; nome: string; nivelMinimo: number }[] = [
+  { numero: 1, nome: "Ovo", nivelMinimo: 1 },
+  { numero: 2, nome: "Filhote", nivelMinimo: 2 },
+  { numero: 3, nome: "Jovem", nivelMinimo: 4 },
+  { numero: 4, nome: "Adulto", nivelMinimo: 7 },
+  { numero: 5, nome: "Lendário", nivelMinimo: 10 },
+];
+
+export function estagioDoMascote(nivel: number): EstagioMascote {
+  const atual = [...ESTAGIOS].reverse().find((e) => nivel >= e.nivelMinimo)!;
+  const proximo = ESTAGIOS.find((e) => e.nivelMinimo > nivel);
+  return { numero: atual.numero, nome: atual.nome, proximoNivel: proximo?.nivelMinimo ?? null };
+}
+
 export function montarGamificacao(dados: {
   totalRefeicoes: number;
   datasRefeicoes: Date[];

@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
-import { AVATARES, type Avatar } from "@/lib/avatares";
-import type { Gamificacao } from "@/lib/gamificacao";
+import { CORES_MASCOTE, type CorMascote } from "@/lib/avatares";
+import { estagioDoMascote, type Gamificacao } from "@/lib/gamificacao";
+import Mascote, { type HumorMascote } from "@/components/Mascote";
 
 // ============================================================================
 // Topo gamificado do perfil:
-//   - mascote "tamagotchi": flutua, reage ao toque e fala conforme o estado
-//     (com fome se não registrou hoje, empolgado com streak alto...)
+//   - mascote estilo Finch: cresce por estágios conforme o nível (que vem do
+//     hábito de registrar), reage ao toque com pulo + partículas e fala
 //   - nível + barra de XP (10 XP por refeição registrada)
 //   - conquistas 🏆 — DOURADO é reservado para elas (decisão de paleta)
 //   - gráfico simples dos últimos 7 dias vs meta
@@ -23,62 +24,86 @@ interface DiaSemana {
 
 interface Props {
   nome: string | null;
-  avatar: Avatar;
+  cor: CorMascote;
   gamificacao: Gamificacao;
   semana: DiaSemana[];
   meta: number;
 }
 
-// Falas do mascote por estado — uma aleatória a cada toque
-function falasDoMascote(g: Gamificacao, nome: string | null): string[] {
-  const oi = nome ? `${nome}` : "você";
+function humorDoMascote(g: Gamificacao): HumorMascote {
+  if (!g.registrouHoje) return "faminto";
+  if (g.streak >= 3) return "empolgado";
+  return "feliz";
+}
+
+// Falas por estado — uma aleatória a cada toque
+function falasDoMascote(g: Gamificacao, nome: string | null, estagioNome: string): string[] {
+  const oi = nome ?? "você";
+  if (estagioNome === "Ovo") {
+    return ["Registra refeições que eu saio do ovo! 🥚", "Tá quentinho aqui... mas quero nascer! 🐣"];
+  }
   if (!g.registrouHoje) {
     return [
       "Tô com fome... registra uma refeição! 🍽️",
       "Nada no diário hoje ainda 👀",
       `Bora fotografar o prato, ${oi}? 📷`,
+      "Me alimenta que eu cresço! 🌱",
     ];
   }
   if (g.streak >= 7) {
     return [
       `${g.streak} dias seguidos, que orgulho! 🚀`,
       "A gente tá imparável! 🔥",
-      "Semana perfeita é com a gente mesmo 😎",
+      "Olha o tamanho que eu tô ficando! 💪",
     ];
   }
   if (g.streak >= 3) {
-    return [`${g.streak} dias de sequência! 🔥`, "Tamo pegando fogo! 🔥", "Não quebra o streak, hein! 👊"];
+    return [`${g.streak} dias de sequência! 🔥`, "Tamo pegando fogo! 🔥", "Continua assim que eu cresço! 🌱"];
   }
-  return ["Registrou hoje, mandou bem! ✅", "Tamo juntos nessa! 💪", "Um dia de cada vez 🌱"];
+  return ["Registrou hoje, mandou bem! ✅", "Tamo juntos nessa! 💪", "Cada refeição me deixa mais forte 🌱"];
 }
 
-export default function PerfilGamificado({ nome, avatar, gamificacao, semana, meta }: Props) {
+interface Particula {
+  id: number;
+  x: number;
+  emoji: string;
+}
+
+export default function PerfilGamificado({ nome, cor, gamificacao, semana, meta }: Props) {
   const router = useRouter();
   const [escopo, animar] = useAnimate();
-  const [fala, setFala] = useState(() => falasDoMascote(gamificacao, nome)[0]);
+  const estagio = estagioDoMascote(gamificacao.nivel);
+  const [fala, setFala] = useState(() => falasDoMascote(gamificacao, nome, estagio.nome)[0]);
   const [escolhendo, setEscolhendo] = useState(false);
-  const [salvandoAvatar, setSalvandoAvatar] = useState(false);
+  const [salvandoCor, setSalvandoCor] = useState(false);
+  const [particulas, setParticulas] = useState<Particula[]>([]);
 
-  // Toque no mascote: pulo + fala nova — o "tamagotchi" responde
+  // Toque no mascote: pulo + partículas + fala nova
   function cutucar() {
-    animar(
-      escopo.current,
-      { y: [0, -18, 0, -8, 0], rotate: [0, -6, 6, -3, 0] },
-      { duration: 0.6 },
-    );
-    const falas = falasDoMascote(gamificacao, nome);
+    animar(escopo.current, { y: [0, -20, 0, -8, 0], rotate: [0, -5, 5, -2, 0] }, { duration: 0.65 });
+
+    const emojis = gamificacao.registrouHoje ? ["💚", "✨", "⭐"] : ["🍽️", "💭", "🥕"];
+    const novas = Array.from({ length: 5 }, (_, i) => ({
+      id: Date.now() + i,
+      x: (Math.random() - 0.5) * 120,
+      emoji: emojis[Math.floor(Math.random() * emojis.length)],
+    }));
+    setParticulas((atual) => [...atual, ...novas]);
+    setTimeout(() => setParticulas((atual) => atual.filter((p) => !novas.includes(p))), 1200);
+
+    const falas = falasDoMascote(gamificacao, nome, estagio.nome);
     setFala(falas[Math.floor(Math.random() * falas.length)]);
   }
 
-  async function trocarAvatar(novo: Avatar) {
-    if (salvandoAvatar) return;
-    setSalvandoAvatar(true);
+  async function trocarCor(nova: CorMascote) {
+    if (salvandoCor) return;
+    setSalvandoCor(true);
     const resposta = await fetch("/api/perfil", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ avatar: novo }),
+      body: JSON.stringify({ avatar: nova.id }),
     });
-    setSalvandoAvatar(false);
+    setSalvandoCor(false);
     if (resposta.ok) {
       setEscolhendo(false);
       router.refresh();
@@ -92,7 +117,7 @@ export default function PerfilGamificado({ nome, avatar, gamificacao, semana, me
       {/* Mascote */}
       <section className="cartao relative overflow-hidden p-5 text-center">
         {gamificacao.streak > 0 && (
-          <span className="absolute right-4 top-4 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-sm font-bold tabular-nums text-orange-600">
+          <span className="absolute right-4 top-4 z-10 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-sm font-bold tabular-nums text-orange-600">
             🔥 {gamificacao.streak}
           </span>
         )}
@@ -110,24 +135,38 @@ export default function PerfilGamificado({ nome, avatar, gamificacao, semana, me
           </motion.p>
         </AnimatePresence>
 
-        {/* O mascote em si: flutua sozinho, pula ao toque */}
-        <motion.button
-          type="button"
-          onClick={cutucar}
-          aria-label="Cutucar o mascote"
-          className="mt-3 block w-full"
-          animate={{ y: [0, -5, 0] }}
-          transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
-        >
-          <span
-            ref={escopo}
-            className="inline-flex h-24 w-24 items-center justify-center rounded-full border border-emerald-200 bg-gradient-to-b from-emerald-50 to-emerald-100 text-6xl shadow-[0_8px_24px_-12px_rgba(16,185,129,0.5)]"
-          >
-            {avatar}
-          </span>
-        </motion.button>
+        {/* Mascote + partículas ao cutucar */}
+        <div className="relative mt-2">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center">
+            <AnimatePresence>
+              {particulas.map((p) => (
+                <motion.span
+                  key={p.id}
+                  initial={{ opacity: 1, y: 40, x: p.x * 0.3, scale: 0.6 }}
+                  animate={{ opacity: 0, y: -50, x: p.x, scale: 1.2 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.1, ease: "easeOut" }}
+                  className="absolute text-xl"
+                >
+                  {p.emoji}
+                </motion.span>
+              ))}
+            </AnimatePresence>
+          </div>
+          <button type="button" onClick={cutucar} aria-label="Cutucar o mascote" className="w-full">
+            <span ref={escopo} className="block">
+              <Mascote cor={cor} estagio={estagio.numero} humor={humorDoMascote(gamificacao)} tamanho={150} />
+            </span>
+          </button>
+        </div>
 
-        <p className="mt-3 text-lg font-bold tracking-tight">{nome ?? "Seu perfil"}</p>
+        <p className="text-lg font-bold tracking-tight">{nome ?? "Seu perfil"}</p>
+        {/* Estágio de crescimento — o coração do "Finch": manter o hábito faz crescer */}
+        <p className="mt-0.5 text-xs text-zinc-400">
+          <span className="font-semibold text-zinc-500">{estagio.nome}</span>
+          {estagio.proximoNivel !== null && <> · evolui no nível {estagio.proximoNivel}</>}
+          {estagio.proximoNivel === null && <> · forma final ✨</>}
+        </p>
 
         {/* Nível + barra de XP */}
         <div className="mx-auto mt-3 max-w-xs">
@@ -145,9 +184,7 @@ export default function PerfilGamificado({ nome, avatar, gamificacao, semana, me
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             />
           </div>
-          <p className="mt-1.5 text-[11px] text-zinc-400">
-            ⭐ 10 XP por refeição registrada
-          </p>
+          <p className="mt-1.5 text-[11px] text-zinc-400">⭐ 10 XP por refeição registrada</p>
         </div>
 
         <button
@@ -155,10 +192,10 @@ export default function PerfilGamificado({ nome, avatar, gamificacao, semana, me
           onClick={() => setEscolhendo(!escolhendo)}
           className="mt-4 text-xs font-medium text-emerald-600"
         >
-          {escolhendo ? "fechar" : "trocar personagem"}
+          {escolhendo ? "fechar" : "trocar cor do mascote"}
         </button>
 
-        {/* Escolha do personagem */}
+        {/* Escolha da cor */}
         <AnimatePresence>
           {escolhendo && (
             <motion.div
@@ -167,21 +204,22 @@ export default function PerfilGamificado({ nome, avatar, gamificacao, semana, me
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {AVATARES.map((a) => (
+              <div className="mt-3 grid grid-cols-6 gap-2">
+                {CORES_MASCOTE.map((c) => (
                   <button
-                    key={a}
+                    key={c.id}
                     type="button"
-                    disabled={salvandoAvatar}
-                    onClick={() => trocarAvatar(a)}
-                    className={`rounded-2xl border py-3 text-3xl transition active:scale-90 ${
-                      a === avatar
-                        ? "border-emerald-500/50 bg-emerald-500/10"
-                        : "border-zinc-200 bg-white"
+                    disabled={salvandoCor}
+                    onClick={() => trocarCor(c)}
+                    aria-label={`Cor ${c.nome}`}
+                    className={`flex items-center justify-center rounded-2xl border py-2 transition active:scale-90 ${
+                      c.id === cor.id ? "border-emerald-500/60 bg-emerald-500/10" : "border-zinc-200 bg-white"
                     }`}
-                    aria-label={`Escolher ${a}`}
                   >
-                    {a}
+                    <span
+                      className="h-7 w-7 rounded-full border-2"
+                      style={{ background: c.principal, borderColor: c.escuro }}
+                    />
                   </button>
                 ))}
               </div>
