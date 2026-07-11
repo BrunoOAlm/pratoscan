@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import RegistroSW from "@/components/RegistroSW";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,6 +17,13 @@ export const metadata: Metadata = {
   title: "PratoScan",
   description: "Fotografe seu prato e acompanhe suas calorias",
   applicationName: "PratoScan",
+  // iOS não usa o manifest: estas tags fazem o "Adicionar à Tela de Início"
+  // do Safari abrir em tela cheia com a status bar integrada ao tema escuro
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "PratoScan",
+  },
 };
 
 // maximumScale/userScalable travados para a experiência parecer app nativo
@@ -38,7 +46,10 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <RegistroSW />
+        {children}
+      </body>
     </html>
   );
 }
