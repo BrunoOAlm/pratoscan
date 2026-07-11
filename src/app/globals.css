@@ -16,26 +16,58 @@ html {
 }
 
 body {
-  background: var(--background);
+  /* Glow violeta profundo no topo (referência Lean AI): dá profundidade
+     premium sem sair do dark — o lima fica só para ações e progresso */
+  background:
+    radial-gradient(85% 45% at 50% 0%, rgba(99, 102, 241, 0.13), transparent 70%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   /* Evita "pulos" de layout em celulares com notch/barra de gestos */
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Entrada suave de cards em listas (usar com animation-delay escalonado) */
+@keyframes entrada-subindo {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @layer components {
   /* Campo de formulário padrão do app */
   .campo {
-    @apply w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-base text-zinc-100 placeholder:text-zinc-500 outline-none transition-colors focus:border-lime-400;
+    @apply w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-base text-zinc-100 placeholder:text-zinc-500 outline-none transition-colors focus:border-lime-400/70 focus:bg-white/[0.06];
   }
 
-  /* Botão principal (destaque lime) */
+  /* Botão principal: gradiente lima com brilho — o "verde de progresso" do app */
   .botao-primario {
-    @apply w-full rounded-2xl bg-lime-400 px-4 py-3.5 text-base font-semibold text-zinc-950 transition active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100;
+    @apply w-full rounded-2xl bg-gradient-to-b from-lime-300 to-lime-500 px-4 py-3.5 text-base font-semibold text-zinc-950 shadow-lg shadow-lime-500/25 transition active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:active:scale-100;
   }
 
-  /* Botão secundário (contorno) */
+  /* Botão secundário (contorno translúcido) */
   .botao-secundario {
-    @apply w-full rounded-2xl border border-zinc-700 px-4 py-3.5 text-base font-semibold text-zinc-100 transition active:scale-[0.98];
+    @apply w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-base font-semibold text-zinc-100 transition active:scale-[0.98];
+  }
+
+  /* Card padrão do redesign: gradiente sutil + borda translúcida + fio de
+     luz no topo (inset shadow) — profundidade sem poluir */
+  .cartao {
+    @apply rounded-3xl border border-white/[0.07] bg-gradient-to-b from-zinc-900 to-zinc-900/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)];
+  }
+
+  /* Variante compacta do cartão (itens de lista) */
+  .cartao-item {
+    @apply rounded-2xl border border-white/[0.07] bg-gradient-to-b from-zinc-900 to-zinc-900/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)];
+  }
+
+  /* Aplicar em elementos de lista com style={{ animationDelay: ... }} */
+  .entrada {
+    animation: entrada-subindo 0.4s ease-out both;
   }
 }

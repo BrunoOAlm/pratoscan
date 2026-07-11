@@ -15,7 +15,7 @@ export default function BottomNav() {
     pathname.startsWith(rota) ? "text-lime-400" : "text-zinc-500";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/[0.06] bg-zinc-950/75 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-md items-center justify-around px-6 py-2">
         <Link
           href="/diario"
@@ -48,8 +48,11 @@ export default function BottomNav() {
           aria-label="Escanear prato"
           className="-mt-7"
         >
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-lime-400 text-3xl shadow-lg shadow-lime-400/30 transition active:scale-95">
-            📷
+          {/* Halo translúcido atrás do botão: destaca sem pesar */}
+          <span className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-full bg-lime-400/15">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-lime-300 to-lime-500 text-3xl shadow-lg shadow-lime-500/40 transition active:scale-95">
+              📷
+            </span>
           </span>
         </button>
 

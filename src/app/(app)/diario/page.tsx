@@ -13,12 +13,30 @@ import {
 import ResumoDia from "@/components/ResumoDia";
 import type { TipoRefeicao } from "@prisma/client";
 
-const ROTULO_TIPO: Record<TipoRefeicao, { nome: string; emoji: string }> = {
-  CAFE: { nome: "Café da manhã", emoji: "☕" },
-  ALMOCO: { nome: "Almoço", emoji: "🍛" },
-  JANTAR: { nome: "Jantar", emoji: "🌙" },
-  LANCHE: { nome: "Lanche", emoji: "🍎" },
+// Cada tipo de refeição tem sua cor (referência de design): o tile do emoji
+// ganha o tom do tipo, o resto do card fica neutro
+const ROTULO_TIPO: Record<TipoRefeicao, { nome: string; emoji: string; tile: string }> = {
+  CAFE: { nome: "Café da manhã", emoji: "☕", tile: "border-amber-400/20 bg-amber-400/10" },
+  ALMOCO: { nome: "Almoço", emoji: "🍛", tile: "border-emerald-400/20 bg-emerald-400/10" },
+  JANTAR: { nome: "Jantar", emoji: "🌙", tile: "border-indigo-400/20 bg-indigo-400/10" },
+  LANCHE: { nome: "Lanche", emoji: "🍎", tile: "border-rose-400/20 bg-rose-400/10" },
 };
+
+// Régua de 7 dias no topo (referência de design): janela deslizante que
+// termina no dia selecionado+3, mas nunca mostra o futuro. Tocar nas pontas
+// "desliza" a janela — navegação infinita sem estado no client.
+function janelaDeDias(selecionado: string, hoje: string): string[] {
+  const alvo = somarDias(selecionado, 3);
+  const fim = alvo > hoje ? hoje : alvo; // ISO YYYY-MM-DD compara como string
+  return Array.from({ length: 7 }, (_, i) => somarDias(fim, i - 6));
+}
+
+// Letra do dia da semana (S T Q Q S S D) para a régua
+function letraDoDia(data: string): string {
+  return new Date(`${data}T12:00:00Z`)
+    .toLocaleDateString("pt-BR", { weekday: "narrow", timeZone: "UTC" })
+    .toUpperCase();
+}
 
 // Diário do dia: anel de progresso, macros e refeições. O dia exibido vem
 // de ?data=YYYY-MM-DD (sem o parâmetro, é hoje) — assim cada dia tem URL
@@ -62,37 +80,44 @@ export default async function DiarioPage({
 
   return (
     <main className="px-6 py-8">
-      {/* Navegação entre dias */}
-      <div className="flex items-center justify-between">
-        <Link
-          href={`/diario?data=${somarDias(data, -1)}`}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-lg text-zinc-300"
-          aria-label="Dia anterior"
-        >
-          ←
-        </Link>
-        <div className="text-center">
-          <p className="font-semibold capitalize">{rotuloDoDia(data)}</p>
-          {!ehHoje && (
-            <Link href="/diario" className="text-xs text-lime-400">
-              voltar para hoje
-            </Link>
-          )}
-        </div>
-        {/* Não deixa navegar para o futuro: dia sem refeição possível é ruído */}
-        {ehHoje ? (
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/40 text-lg text-zinc-700">
-            →
-          </span>
-        ) : (
-          <Link
-            href={`/diario?data=${somarDias(data, 1)}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-lg text-zinc-300"
-            aria-label="Próximo dia"
-          >
-            →
+      {/* Cabeçalho do dia */}
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-bold capitalize tracking-tight">{rotuloDoDia(data)}</h1>
+        {!ehHoje && (
+          <Link href="/diario" className="text-xs font-medium text-lime-400">
+            voltar para hoje →
           </Link>
         )}
+      </div>
+
+      {/* Régua de dias: tocar nas pontas desliza a janela para navegar */}
+      <div className="mt-4 grid grid-cols-7 gap-1.5">
+        {janelaDeDias(data, hojeNoBrasil()).map((d) => {
+          const selecionado = d === data;
+          return (
+            <Link
+              key={d}
+              href={`/diario?data=${d}`}
+              aria-label={rotuloDoDia(d)}
+              className={`flex flex-col items-center gap-0.5 rounded-2xl border py-2 transition active:scale-95 ${
+                selecionado
+                  ? "border-lime-400/60 bg-lime-400/10 shadow-[0_0_14px_rgba(163,230,53,0.12)]"
+                  : "border-white/[0.06] bg-white/[0.02]"
+              }`}
+            >
+              <span className={`text-[10px] font-medium ${selecionado ? "text-lime-300" : "text-zinc-500"}`}>
+                {letraDoDia(d)}
+              </span>
+              <span
+                className={`text-sm font-bold tabular-nums ${
+                  selecionado ? "text-lime-300" : "text-zinc-300"
+                }`}
+              >
+                {Number(d.slice(8))}
+              </span>
+            </Link>
+          );
+        })}
       </div>
 
       <div className="mt-6">
@@ -108,9 +133,9 @@ export default async function DiarioPage({
       </div>
 
       {/* Refeições do dia */}
-      <h2 className="mt-8 text-lg font-bold">Refeições</h2>
+      <h2 className="mt-8 text-lg font-bold tracking-tight">Refeições</h2>
       {refeicoes.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-zinc-800 p-8 text-center">
+        <div className="entrada mt-4 rounded-3xl border border-dashed border-white/10 p-8 text-center">
           <p className="text-4xl">🍽️</p>
           <p className="mt-3 text-zinc-400">
             {ehHoje ? "Nenhuma refeição registrada hoje." : "Nenhuma refeição neste dia."}
@@ -123,25 +148,27 @@ export default async function DiarioPage({
         </div>
       ) : (
         <ul className="mt-4 flex flex-col gap-3">
-          {refeicoes.map((r) => (
-            <li key={r.id}>
+          {refeicoes.map((r, i) => (
+            <li key={r.id} className="entrada" style={{ animationDelay: `${i * 60}ms` }}>
               <Link
                 href={`/diario/refeicao/${r.id}`}
-                className="flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900 p-4 transition active:scale-[0.98]"
+                className="cartao-item flex items-center gap-4 p-4 transition active:scale-[0.98]"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-800 text-2xl">
+                <span
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border text-2xl ${ROTULO_TIPO[r.tipo].tile}`}
+                >
                   {ROTULO_TIPO[r.tipo].emoji}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{ROTULO_TIPO[r.tipo].nome}</p>
-                  <p className="text-sm text-zinc-400">
+                  <p className="mt-0.5 text-sm text-zinc-500">
                     {horarioNoBrasil(r.dataHora)} · {r._count.itens}{" "}
                     {r._count.itens === 1 ? "item" : "itens"}
                   </p>
                 </div>
-                <p className="shrink-0 font-bold text-lime-400">
+                <p className="shrink-0 font-bold tabular-nums text-lime-400">
                   {Math.round(r.totalCalorias).toLocaleString("pt-BR")}
-                  <span className="ml-1 text-xs font-medium text-zinc-400">kcal</span>
+                  <span className="ml-1 text-xs font-medium text-zinc-500">kcal</span>
                 </p>
               </Link>
             </li>

@@ -173,7 +173,7 @@ export default function OnboardingWizard() {
             ←
           </button>
         )}
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-800">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
           <motion.div
             className="h-full rounded-full bg-lime-400"
             animate={{ width: `${((passo + 1) / PASSOS.length) * 100}%` }}
@@ -354,8 +354,8 @@ function CartaoOpcao(props: {
       onClick={props.onClick}
       className={`rounded-2xl border p-4 text-left transition-colors ${
         props.selecionado
-          ? "border-lime-400 bg-lime-400/10"
-          : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
+          ? "border-lime-400/60 bg-lime-400/10 shadow-[0_0_14px_rgba(163,230,53,0.12)]"
+          : "border-white/[0.07] bg-white/[0.03] hover:border-white/20"
       }`}
     >
       {props.children}

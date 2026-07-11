@@ -194,15 +194,23 @@ export default function ScanFlow() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.93 }}
-              onClick={() => inputRef.current?.click()}
-              className="flex h-40 w-40 items-center justify-center rounded-full bg-lime-400 text-6xl shadow-xl shadow-lime-400/25"
-              aria-label="Fotografar prato"
-            >
-              📷
-            </motion.button>
+            <div className="relative">
+              {/* Halo pulsante convida ao toque — o momento-chave do app */}
+              <motion.span
+                className="absolute inset-0 rounded-full bg-lime-400/20"
+                animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+              />
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.93 }}
+                onClick={() => inputRef.current?.click()}
+                className="relative flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-b from-lime-300 to-lime-500 text-6xl shadow-xl shadow-lime-500/30"
+                aria-label="Fotografar prato"
+              >
+                📷
+              </motion.button>
+            </div>
             <h1 className="mt-8 text-2xl font-bold">Fotografe seu prato</h1>
             <p className="mt-2 max-w-xs text-zinc-400">
               A IA identifica os alimentos e estima calorias e macros. Você revisa antes de salvar.
@@ -242,8 +250,8 @@ export default function ScanFlow() {
                   onClick={() => setTipo(t.valor)}
                   className={`rounded-xl border px-1 py-2 text-center text-xs font-medium transition-colors ${
                     tipo === t.valor
-                      ? "border-lime-400 bg-lime-400/10 text-lime-300"
-                      : "border-zinc-800 bg-zinc-900 text-zinc-400"
+                      ? "border-lime-400/60 bg-lime-400/10 text-lime-300 shadow-[0_0_14px_rgba(163,230,53,0.12)]"
+                      : "border-white/[0.07] bg-white/[0.03] text-zinc-400"
                   }`}
                 >
                   <span className="block text-base">{t.emoji}</span>
@@ -329,7 +337,7 @@ function TelaAnalisando() {
       <div className="relative flex h-32 w-32 items-center justify-center">
         {/* Anel girando */}
         <motion.span
-          className="absolute inset-0 rounded-full border-4 border-zinc-800 border-t-lime-400"
+          className="absolute inset-0 rounded-full border-4 border-white/[0.07] border-t-lime-400 drop-shadow-[0_0_10px_rgba(163,230,53,0.4)]"
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1.1, ease: "linear" }}
         />
@@ -376,14 +384,14 @@ function CardAlimento(props: {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, height: 0, marginTop: -12 }}
-      className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+      className="cartao-item overflow-hidden p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-semibold">
             {base.nome}
             {origem === "MANUAL" && (
-              <span className="ml-2 rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+              <span className="ml-2 rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-medium text-zinc-400">
                 manual
               </span>
             )}
@@ -402,7 +410,7 @@ function CardAlimento(props: {
 
       <div className="mt-3 flex items-center justify-between">
         {/* Stepper de porção: −/+ em passos de 0.5× */}
-        <div className="flex items-center gap-3 rounded-full bg-zinc-800 px-2 py-1">
+        <div className="flex items-center gap-3 rounded-full border border-white/[0.06] bg-white/[0.05] px-2 py-1">
           <button
             type="button"
             onClick={() => props.aoAjustar(-0.5)}
@@ -473,7 +481,7 @@ function FormAdicionarManual(props: { aoAdicionar: (item: ItemScan) => void }) {
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="mt-3 w-full rounded-2xl border border-dashed border-zinc-700 px-4 py-3 text-sm font-medium text-zinc-400 transition-colors hover:border-zinc-500"
+        className="mt-3 w-full rounded-2xl border border-dashed border-white/15 px-4 py-3 text-sm font-medium text-zinc-400 transition-colors hover:border-white/30"
       >
         + Adicionar alimento manualmente
       </button>
@@ -484,7 +492,7 @@ function FormAdicionarManual(props: { aoAdicionar: (item: ItemScan) => void }) {
     <motion.div
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
-      className="mt-3 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+      className="cartao-item mt-3 overflow-hidden p-4"
     >
       <p className="font-semibold">Adicionar alimento</p>
       <div className="mt-3 flex flex-col gap-2">

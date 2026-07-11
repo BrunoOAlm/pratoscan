@@ -41,7 +41,7 @@ export default async function PerfilPage() {
       </h1>
       <p className="mt-1 text-zinc-400">Seus dados</p>
 
-      <div className="mt-6 divide-y divide-zinc-800 rounded-3xl border border-zinc-800 bg-zinc-900">
+      <div className="cartao mt-6 divide-y divide-white/[0.06]">
         {linhas.map(([rotulo, valor]) => (
           <div key={rotulo} className="flex items-center justify-between px-5 py-4">
             <span className="text-sm text-zinc-400">{rotulo}</span>

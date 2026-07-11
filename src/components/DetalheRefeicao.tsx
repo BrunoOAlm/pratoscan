@@ -119,7 +119,7 @@ export default function DetalheRefeicao({ refeicao }: Props) {
       <div className="flex items-center gap-3">
         <Link
           href={linkVoltar}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-lg text-zinc-300"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.04] text-lg text-zinc-300 transition active:scale-90"
           aria-label="Voltar ao diário"
         >
           ←
@@ -142,8 +142,8 @@ export default function DetalheRefeicao({ refeicao }: Props) {
             onClick={() => trocarTipo(t.valor)}
             className={`rounded-xl border px-1 py-2 text-center text-xs font-medium transition-colors ${
               refeicao.tipo === t.valor
-                ? "border-lime-400 bg-lime-400/10 text-lime-300"
-                : "border-zinc-800 bg-zinc-900 text-zinc-400"
+                ? "border-lime-400/60 bg-lime-400/10 text-lime-300 shadow-[0_0_14px_rgba(163,230,53,0.12)]"
+                : "border-white/[0.07] bg-white/[0.03] text-zinc-400"
             }`}
           >
             <span className="block text-base">{t.emoji}</span>
@@ -153,7 +153,7 @@ export default function DetalheRefeicao({ refeicao }: Props) {
       </div>
 
       {/* Totais */}
-      <div className="mt-5 rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+      <div className="cartao-item mt-5 p-4">
         <div className="flex items-baseline justify-between">
           <span className="text-zinc-400">Total</span>
           <span className="text-2xl font-bold text-lime-400">
@@ -176,14 +176,14 @@ export default function DetalheRefeicao({ refeicao }: Props) {
               key={item.id}
               layout
               exit={{ opacity: 0, scale: 0.9, height: 0, marginTop: -12 }}
-              className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+              className="cartao-item overflow-hidden p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold">
                     {item.nome}
                     {item.origem === "MANUAL" && (
-                      <span className="ml-2 rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+                      <span className="ml-2 rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-medium text-zinc-400">
                         manual
                       </span>
                     )}
