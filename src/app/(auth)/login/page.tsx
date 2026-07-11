@@ -45,7 +45,7 @@ export default function LoginPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur-md sm:p-8"
+        className="relative z-10 rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur-md sm:p-8"
       >
         <Image
           src="/icons/icone-192.png"
