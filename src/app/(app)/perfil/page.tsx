@@ -1,5 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { hojeNoBrasil, rotuloDoDia, somarDias } from "@/lib/datas";
+import { montarGamificacao } from "@/lib/gamificacao";
+import { AVATAR_PADRAO, type Avatar } from "@/lib/avatares";
+import PerfilGamificado from "@/components/PerfilGamificado";
 import BotaoSair from "@/components/BotaoSair";
 
 const ROTULO_ATIVIDADE: Record<string, string> = {
@@ -16,12 +20,47 @@ const ROTULO_OBJETIVO: Record<string, string> = {
   GANHAR: "Ganhar peso",
 };
 
-// Perfil — versão da fase (a): exibe os dados e permite sair.
-// A edição com recálculo da meta entra junto do polish (fase d).
+// Perfil gamificado: mascote, nível/XP, conquistas e gráfico da semana.
+// Toda a gamificação é DERIVADA das refeições (ver lib/gamificacao.ts),
+// então esta página busca as refeições uma vez e computa tudo aqui.
 export default async function PerfilPage() {
   const session = await auth();
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: session!.user.id },
+  const [user, refeicoes] = await Promise.all([
+    prisma.user.findUniqueOrThrow({ where: { id: session!.user.id } }),
+    prisma.meal.findMany({
+      where: { userId: session!.user.id },
+      select: { dataHora: true, totalCalorias: true },
+    }),
+  ]);
+  const meta = user.metaCalorias!; // garantido pelo gate do layout
+
+  // Total de kcal por dia (fuso do Brasil) — alimenta a conquista de meta e o gráfico
+  const totalPorDia = new Map<string, number>();
+  for (const r of refeicoes) {
+    const dia = r.dataHora.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+    totalPorDia.set(dia, (totalPorDia.get(dia) ?? 0) + r.totalCalorias);
+  }
+  const bateuMetaAlgumDia = [...totalPorDia.values()].some(
+    (kcal) => kcal >= meta * 0.9 && kcal <= meta * 1.1,
+  );
+
+  const gamificacao = montarGamificacao({
+    totalRefeicoes: refeicoes.length,
+    datasRefeicoes: refeicoes.map((r) => r.dataHora),
+    bateuMetaAlgumDia,
+  });
+
+  // Últimos 7 dias para o gráfico (do mais antigo até hoje)
+  const hoje = hojeNoBrasil();
+  const semana = Array.from({ length: 7 }, (_, i) => {
+    const dia = somarDias(hoje, i - 6);
+    return {
+      rotulo: rotuloDoDia(dia),
+      letra: new Date(`${dia}T12:00:00Z`)
+        .toLocaleDateString("pt-BR", { weekday: "narrow", timeZone: "UTC" })
+        .toUpperCase(),
+      kcal: Math.round(totalPorDia.get(dia) ?? 0),
+    };
   });
 
   const linhas = [
@@ -31,28 +70,29 @@ export default async function PerfilPage() {
     ["Idade", `${user.idade} anos`],
     ["Atividade", ROTULO_ATIVIDADE[user.nivelAtividade ?? ""] ?? "—"],
     ["Objetivo", ROTULO_OBJETIVO[user.objetivo ?? ""] ?? "—"],
-    ["Meta diária", `${user.metaCalorias?.toLocaleString("pt-BR")} kcal`],
+    ["Meta diária", `${meta.toLocaleString("pt-BR")} kcal`],
   ];
 
   return (
-    <main className="px-6 py-10">
-      <h1 className="text-2xl font-bold tracking-tight">
-        {user.nome ?? "Seu perfil"}
-      </h1>
-      <p className="mt-1 text-zinc-400">Seus dados</p>
+    <main className="px-6 py-8">
+      <PerfilGamificado
+        nome={user.nome?.split(" ")[0] ?? null}
+        avatar={(user.avatar as Avatar) ?? AVATAR_PADRAO}
+        gamificacao={gamificacao}
+        semana={semana}
+        meta={meta}
+      />
 
-      <div className="cartao mt-6 divide-y divide-zinc-100">
+      {/* Dados do onboarding */}
+      <h2 className="mt-8 text-lg font-bold tracking-tight">Seus dados</h2>
+      <div className="cartao mt-3 divide-y divide-zinc-100">
         {linhas.map(([rotulo, valor]) => (
           <div key={rotulo} className="flex items-center justify-between px-5 py-4">
-            <span className="text-sm text-zinc-400">{rotulo}</span>
+            <span className="text-sm text-zinc-500">{rotulo}</span>
             <span className="font-medium">{valor}</span>
           </div>
         ))}
       </div>
-
-      <p className="mt-4 text-center text-xs text-zinc-500">
-        Edição dos dados (com recálculo da meta) chega na fase (d) 🚧
-      </p>
 
       <div className="mt-8">
         <BotaoSair />

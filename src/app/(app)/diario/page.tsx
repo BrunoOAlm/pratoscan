@@ -11,6 +11,7 @@ import {
   somarDias,
 } from "@/lib/datas";
 import ResumoDia from "@/components/ResumoDia";
+import { calcularStreak, diasComRegistro } from "@/lib/gamificacao";
 import type { TipoRefeicao } from "@prisma/client";
 
 // Cada tipo de refeição tem sua cor (referência de design): o tile do emoji
@@ -52,7 +53,10 @@ export default async function DiarioPage({
   const ehHoje = data === hojeNoBrasil();
 
   const { inicio, fim } = intervaloDoDia(data);
-  const [user, refeicoes] = await Promise.all([
+  // Para o streak bastam as datas dos últimos 90 dias — um streak maior que
+  // isso continua contando certo assim que o usuário mantiver o hábito
+  const { inicio: inicioStreak } = intervaloDoDia(somarDias(hojeNoBrasil(), -90));
+  const [user, refeicoes, datasParaStreak] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: session!.user.id },
       select: { metaCalorias: true },
@@ -71,7 +75,13 @@ export default async function DiarioPage({
         _count: { select: { itens: true } },
       },
     }),
+    prisma.meal.findMany({
+      where: { userId: session!.user.id, dataHora: { gte: inicioStreak } },
+      select: { dataHora: true },
+    }),
   ]);
+
+  const { streak } = calcularStreak(diasComRegistro(datasParaStreak.map((m) => m.dataHora)));
 
   const meta = user.metaCalorias!; // garantido pelo gate do layout
   const metaMacros = calcularMetaMacros(meta);
@@ -80,12 +90,23 @@ export default async function DiarioPage({
 
   return (
     <main className="px-6 py-8">
-      {/* Cabeçalho do dia */}
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold capitalize tracking-tight">{rotuloDoDia(data)}</h1>
-        {!ehHoje && (
-          <Link href="/diario" className="text-xs font-medium text-emerald-600">
-            voltar para hoje →
+      {/* Cabeçalho do dia + streak */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold capitalize tracking-tight">{rotuloDoDia(data)}</h1>
+          {!ehHoje && (
+            <Link href="/diario" className="text-xs font-medium text-emerald-600">
+              voltar para hoje →
+            </Link>
+          )}
+        </div>
+        {streak > 0 && (
+          <Link
+            href="/perfil"
+            className="flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-sm font-bold tabular-nums text-orange-600"
+            aria-label={`Sequência de ${streak} ${streak === 1 ? "dia" : "dias"}`}
+          >
+            🔥 {streak}
           </Link>
         )}
       </div>

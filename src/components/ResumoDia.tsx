@@ -66,9 +66,22 @@ function Anel(props: {
 export default function ResumoDia({ consumido, meta, macros }: Props) {
   const estourou = consumido > meta;
   const restantes = Math.round(meta - consumido);
+  // "Meta batida" = fechou o dia dentro de ±10% da meta (mesma regra da conquista)
+  const bateuMeta = consumido >= meta * 0.9 && consumido <= meta * 1.1;
 
   return (
-    <section className="cartao p-5">
+    <section className="cartao relative overflow-hidden p-5">
+      {/* Celebração ao bater a meta 🎉 */}
+      {bateuMeta && (
+        <motion.div
+          initial={{ opacity: 0, y: -16, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", bounce: 0.55, delay: 0.6 }}
+          className="absolute right-4 top-4 flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-600"
+        >
+          🎉 Meta batida!
+        </motion.div>
+      )}
       {/* Número-herói + anel de calorias */}
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">

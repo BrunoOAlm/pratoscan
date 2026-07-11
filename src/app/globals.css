@@ -14,6 +14,9 @@
 :root {
   --background: #ffffff;
   --foreground: #27272a; /* zinc-800 */
+  /* Tema é claro por decisão de design: impede o navegador de escurecer
+     controles/scrollbars quando o celular está em dark mode */
+  color-scheme: light;
 }
 
 html {
