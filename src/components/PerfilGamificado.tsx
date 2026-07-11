@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
-import { ANIMAIS_MASCOTE, type AnimalMascote } from "@/lib/avatares";
-import { estagioDoMascote, type Gamificacao } from "@/lib/gamificacao";
-import Mascote, { type HumorMascote } from "@/components/Mascote";
+import type { AnimalMascote } from "@/lib/avatares";
+import type { Gamificacao, ProgressoAnimal } from "@/lib/gamificacao";
+import { falaAleatoria, falasDoMascote, humorDoMascote } from "@/lib/mascote-humor";
+import Mascote from "@/components/Mascote";
 
 // ============================================================================
 // Topo gamificado do perfil:
@@ -22,49 +23,20 @@ interface DiaSemana {
   kcal: number;
 }
 
+interface ItemColecao {
+  animal: AnimalMascote;
+  progresso: ProgressoAnimal;
+}
+
 interface Props {
   nome: string | null;
   animal: AnimalMascote;
+  /** Progresso do animal ATIVO (cada bicho tem o seu — coleção) */
+  progresso: ProgressoAnimal;
+  colecao: ItemColecao[];
   gamificacao: Gamificacao;
   semana: DiaSemana[];
   meta: number;
-}
-
-function humorDoMascote(g: Gamificacao): HumorMascote {
-  if (!g.registrouHoje) return "faminto";
-  if (g.streak >= 3) return "empolgado";
-  return "feliz";
-}
-
-// Falas por estado — uma aleatória a cada toque
-function falasDoMascote(g: Gamificacao, nome: string | null, estagioNome: string): string[] {
-  const oi = nome ?? "você";
-  if (estagioNome === "Bebê") {
-    return [
-      "Sou só um bebê... me alimenta direitinho! 🍼",
-      "Registra refeições que eu cresço rapidinho 🌱",
-      `Cuida de mim, ${oi}! 🥺`,
-    ];
-  }
-  if (!g.registrouHoje) {
-    return [
-      "Tô com fome... registra uma refeição! 🍽️",
-      "Nada no diário hoje ainda 👀",
-      `Bora fotografar o prato, ${oi}? 📷`,
-      "Me alimenta que eu cresço! 🌱",
-    ];
-  }
-  if (g.streak >= 7) {
-    return [
-      `${g.streak} dias seguidos, que orgulho! 🚀`,
-      "A gente tá imparável! 🔥",
-      "Olha o tamanho que eu tô ficando! 💪",
-    ];
-  }
-  if (g.streak >= 3) {
-    return [`${g.streak} dias de sequência! 🔥`, "Tamo pegando fogo! 🔥", "Continua assim que eu cresço! 🌱"];
-  }
-  return ["Registrou hoje, mandou bem! ✅", "Tamo juntos nessa! 💪", "Cada refeição me deixa mais forte 🌱"];
 }
 
 interface Particula {
@@ -73,10 +45,10 @@ interface Particula {
   emoji: string;
 }
 
-export default function PerfilGamificado({ nome, animal, gamificacao, semana, meta }: Props) {
+export default function PerfilGamificado({ nome, animal, progresso, colecao, gamificacao, semana, meta }: Props) {
   const router = useRouter();
   const [escopo, animar] = useAnimate();
-  const estagio = estagioDoMascote(gamificacao.nivel);
+  const estagio = progresso.estagio;
   const [fala, setFala] = useState(() => falasDoMascote(gamificacao, nome, estagio.nome)[0]);
   const [escolhendo, setEscolhendo] = useState(false);
   const [salvandoCor, setSalvandoCor] = useState(false);
@@ -95,8 +67,7 @@ export default function PerfilGamificado({ nome, animal, gamificacao, semana, me
     setParticulas((atual) => [...atual, ...novas]);
     setTimeout(() => setParticulas((atual) => atual.filter((p) => !novas.includes(p))), 1200);
 
-    const falas = falasDoMascote(gamificacao, nome, estagio.nome);
-    setFala(falas[Math.floor(Math.random() * falas.length)]);
+    setFala(falaAleatoria(gamificacao, nome, estagio.nome));
   }
 
   async function trocarAnimal(novo: AnimalMascote) {
@@ -172,23 +143,23 @@ export default function PerfilGamificado({ nome, animal, gamificacao, semana, me
           {estagio.proximoNivel === null && <> · forma final ✨</>}
         </p>
 
-        {/* Nível + barra de XP */}
+        {/* Nível + barra de XP — do ANIMAL ativo */}
         <div className="mx-auto mt-3 max-w-xs">
           <div className="flex items-baseline justify-between text-xs">
-            <span className="font-bold text-emerald-600">Nível {gamificacao.nivel}</span>
+            <span className="font-bold text-emerald-600">Nível {progresso.nivel}</span>
             <span className="tabular-nums text-zinc-400">
-              {gamificacao.xpNoNivel}/{gamificacao.xpParaSubir} XP
+              {progresso.xpNoNivel}/{progresso.xpParaSubir} XP
             </span>
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-zinc-100">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
               initial={{ width: 0 }}
-              animate={{ width: `${(gamificacao.xpNoNivel / gamificacao.xpParaSubir) * 100}%` }}
+              animate={{ width: `${(progresso.xpNoNivel / progresso.xpParaSubir) * 100}%` }}
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             />
           </div>
-          <p className="mt-1.5 text-[11px] text-zinc-400">⭐ 10 XP por refeição registrada</p>
+          <p className="mt-1.5 text-[11px] text-zinc-400">⭐ 10 XP por refeição registrada com ele</p>
         </div>
 
         <button
@@ -196,10 +167,11 @@ export default function PerfilGamificado({ nome, animal, gamificacao, semana, me
           onClick={() => setEscolhendo(!escolhendo)}
           className="mt-4 text-xs font-medium text-emerald-600"
         >
-          {escolhendo ? "fechar" : "trocar de bichinho"}
+          {escolhendo ? "fechar" : "minha coleção"}
         </button>
 
-        {/* Escolha do animal — miniaturas de verdade, não bolinhas de cor */}
+        {/* Álbum da coleção: cada bicho aparece no ESTÁGIO que você criou ele.
+            Trocar não perde nada — o progresso de cada um fica guardado. */}
         <AnimatePresence>
           {escolhendo && (
             <motion.div
@@ -209,22 +181,28 @@ export default function PerfilGamificado({ nome, animal, gamificacao, semana, me
               className="overflow-hidden"
             >
               <div className="mt-3 grid grid-cols-3 gap-2">
-                {ANIMAIS_MASCOTE.map((a) => (
+                {colecao.map(({ animal: a, progresso: p }) => (
                   <button
                     key={a.id}
                     type="button"
                     disabled={salvandoCor}
                     onClick={() => trocarAnimal(a)}
-                    aria-label={`Escolher ${a.nome}`}
+                    aria-label={`Escolher ${a.nome} (${p.estagio.nome})`}
                     className={`flex flex-col items-center rounded-2xl border px-1 py-2 transition active:scale-95 ${
                       a.id === animal.id ? "border-emerald-500/60 bg-emerald-500/10" : "border-zinc-200 bg-white"
                     }`}
                   >
-                    <Mascote animal={a} estagio={estagio.numero} humor="feliz" tamanho={56} estatico />
-                    <span className="mt-1 text-[11px] font-medium text-zinc-500">{a.nome}</span>
+                    <Mascote animal={a} estagio={p.estagio.numero} humor="feliz" tamanho={56} estatico />
+                    <span className="mt-1 text-[11px] font-medium text-zinc-600">{a.nome}</span>
+                    <span className={`text-[10px] ${p.xp > 0 ? "text-emerald-600 font-medium" : "text-zinc-400"}`}>
+                      {p.estagio.nome} · nv {p.nivel}
+                    </span>
                   </button>
                 ))}
               </div>
+              <p className="mt-2 text-[11px] text-zinc-400">
+                Cada bichinho guarda o próprio crescimento — troque sem medo 💚
+              </p>
             </motion.div>
           )}
         </AnimatePresence>

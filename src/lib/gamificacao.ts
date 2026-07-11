@@ -14,10 +14,6 @@ export const XP_POR_REFEICAO = 10;
 export interface Gamificacao {
   streak: number; // dias consecutivos com pelo menos 1 refeição
   registrouHoje: boolean;
-  xp: number;
-  nivel: number;
-  xpNoNivel: number; // progresso dentro do nível atual
-  xpParaSubir: number; // tamanho do nível atual
   conquistas: Conquista[];
 }
 
@@ -90,6 +86,23 @@ export function estagioDoMascote(nivel: number): EstagioMascote {
   return { numero: atual.numero, nome: atual.nome, proximoNivel: proximo?.nivelMinimo ?? null };
 }
 
+// O progresso é POR ANIMAL (coleção): o XP de cada bicho vem das refeições
+// registradas enquanto ele estava ativo. Trocar de animal não perde nada —
+// cada um guarda seu próprio crescimento.
+export interface ProgressoAnimal {
+  xp: number;
+  nivel: number;
+  xpNoNivel: number;
+  xpParaSubir: number;
+  estagio: EstagioMascote;
+}
+
+export function progressoDoAnimal(qtdRefeicoesDoAnimal: number): ProgressoAnimal {
+  const xp = qtdRefeicoesDoAnimal * XP_POR_REFEICAO;
+  const nivel = calcularNivel(xp);
+  return { xp, ...nivel, estagio: estagioDoMascote(nivel.nivel) };
+}
+
 export function montarGamificacao(dados: {
   totalRefeicoes: number;
   datasRefeicoes: Date[];
@@ -97,7 +110,6 @@ export function montarGamificacao(dados: {
 }): Gamificacao {
   const dias = diasComRegistro(dados.datasRefeicoes);
   const { streak, registrouHoje } = calcularStreak(dias);
-  const xp = dados.totalRefeicoes * XP_POR_REFEICAO;
 
   const conquistas: Conquista[] = [
     {
@@ -144,5 +156,5 @@ export function montarGamificacao(dados: {
     },
   ];
 
-  return { streak, registrouHoje, xp, ...calcularNivel(xp), conquistas };
+  return { streak, registrouHoje, conquistas };
 }

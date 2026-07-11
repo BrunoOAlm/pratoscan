@@ -11,7 +11,9 @@ import {
   somarDias,
 } from "@/lib/datas";
 import ResumoDia from "@/components/ResumoDia";
-import { calcularStreak, diasComRegistro } from "@/lib/gamificacao";
+import MascoteDoDia from "@/components/MascoteDoDia";
+import { calcularStreak, diasComRegistro, progressoDoAnimal } from "@/lib/gamificacao";
+import { ANIMAL_PADRAO, animalPorId } from "@/lib/avatares";
 import type { TipoRefeicao } from "@prisma/client";
 
 // Cada tipo de refeição tem sua cor (referência de design): o tile do emoji
@@ -56,10 +58,10 @@ export default async function DiarioPage({
   // Para o streak bastam as datas dos últimos 90 dias — um streak maior que
   // isso continua contando certo assim que o usuário mantiver o hábito
   const { inicio: inicioStreak } = intervaloDoDia(somarDias(hojeNoBrasil(), -90));
-  const [user, refeicoes, datasParaStreak] = await Promise.all([
+  const [user, refeicoes, datasParaStreak, refeicoesPorMascote] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: session!.user.id },
-      select: { metaCalorias: true },
+      select: { metaCalorias: true, nome: true, avatar: true },
     }),
     prisma.meal.findMany({
       where: { userId: session!.user.id, dataHora: { gte: inicio, lt: fim } },
@@ -79,9 +81,24 @@ export default async function DiarioPage({
       where: { userId: session!.user.id, dataHora: { gte: inicioStreak } },
       select: { dataHora: true },
     }),
+    // XP do animal ativo = refeições registradas "com ele" (coleção)
+    prisma.meal.groupBy({
+      by: ["mascote"],
+      where: { userId: session!.user.id },
+      _count: { _all: true },
+    }),
   ]);
 
-  const { streak } = calcularStreak(diasComRegistro(datasParaStreak.map((m) => m.dataHora)));
+  const { streak, registrouHoje } = calcularStreak(
+    diasComRegistro(datasParaStreak.map((m) => m.dataHora)),
+  );
+
+  const animalAtivo = animalPorId(user.avatar);
+  // Registros antigos (mascote null) contam para o animal padrão
+  const refeicoesDoAtivo = refeicoesPorMascote
+    .filter((g) => (g.mascote ?? ANIMAL_PADRAO.id) === animalAtivo.id)
+    .reduce((acc, g) => acc + g._count._all, 0);
+  const progressoAtivo = progressoDoAnimal(refeicoesDoAtivo);
 
   const meta = user.metaCalorias!; // garantido pelo gate do layout
   const metaMacros = calcularMetaMacros(meta);
@@ -141,7 +158,17 @@ export default async function DiarioPage({
         })}
       </div>
 
-      <div className="mt-6">
+      {/* A casinha do mascote no dia a dia */}
+      <div className="mt-5">
+        <MascoteDoDia
+          nome={user.nome?.split(" ")[0] ?? null}
+          animal={animalAtivo}
+          progresso={progressoAtivo}
+          estado={{ registrouHoje, streak }}
+        />
+      </div>
+
+      <div className="mt-4">
         <ResumoDia
           consumido={soma("totalCalorias")}
           meta={meta}

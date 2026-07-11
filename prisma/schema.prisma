@@ -69,6 +69,10 @@ model Meal {
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   tipo          TipoRefeicao
   dataHora      DateTime     @default(now())
+  // Animal-mascote ativo quando a refeição foi registrada: o XP de cada
+  // animal é derivado da contagem destas refeições (coleção estilo Finch).
+  // null = registros antigos, contam para o animal padrão.
+  mascote       String?
   // Totais desnormalizados (soma dos itens) para o diário não precisar agregar a cada render
   totalCalorias Float
   totalProteina Float

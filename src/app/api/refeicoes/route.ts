@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { animalPorId } from "@/lib/avatares";
 import type { TipoRefeicao, OrigemAlimento } from "@prisma/client";
 
 const TIPOS: TipoRefeicao[] = ["CAFE", "ALMOCO", "JANTAR", "LANCHE"];
@@ -76,10 +77,18 @@ export async function POST(request: Request) {
   const soma = (campo: "calorias" | "proteina" | "carbo" | "gordura") =>
     Math.round(itens.reduce((acc, i) => acc + i[campo], 0) * 10) / 10;
 
+  // Carimba o animal-mascote ativo: o XP de cada animal é derivado da
+  // contagem de refeições registradas "com ele" (coleção)
+  const dono = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { avatar: true },
+  });
+
   const refeicao = await prisma.meal.create({
     data: {
       userId: session.user.id,
       tipo: body.tipo as TipoRefeicao,
+      mascote: animalPorId(dono?.avatar).id,
       totalCalorias: soma("calorias"),
       totalProteina: soma("proteina"),
       totalCarbo: soma("carbo"),

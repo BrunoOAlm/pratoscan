@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hojeNoBrasil, rotuloDoDia, somarDias } from "@/lib/datas";
-import { montarGamificacao } from "@/lib/gamificacao";
-import { animalPorId } from "@/lib/avatares";
+import { montarGamificacao, progressoDoAnimal } from "@/lib/gamificacao";
+import { ANIMAIS_MASCOTE, ANIMAL_PADRAO, animalPorId } from "@/lib/avatares";
 import PerfilGamificado from "@/components/PerfilGamificado";
 import BotaoSair from "@/components/BotaoSair";
 
@@ -29,7 +29,7 @@ export default async function PerfilPage() {
     prisma.user.findUniqueOrThrow({ where: { id: session!.user.id } }),
     prisma.meal.findMany({
       where: { userId: session!.user.id },
-      select: { dataHora: true, totalCalorias: true },
+      select: { dataHora: true, totalCalorias: true, mascote: true },
     }),
   ]);
   const meta = user.metaCalorias!; // garantido pelo gate do layout
@@ -49,6 +49,20 @@ export default async function PerfilPage() {
     datasRefeicoes: refeicoes.map((r) => r.dataHora),
     bateuMetaAlgumDia,
   });
+
+  // Coleção: refeições por animal (registros antigos, sem carimbo, contam
+  // para o padrão) → progresso individual de cada bicho
+  const refeicoesPorAnimal = new Map<string, number>();
+  for (const r of refeicoes) {
+    const id = r.mascote ?? ANIMAL_PADRAO.id;
+    refeicoesPorAnimal.set(id, (refeicoesPorAnimal.get(id) ?? 0) + 1);
+  }
+  const colecao = ANIMAIS_MASCOTE.map((a) => ({
+    animal: a,
+    progresso: progressoDoAnimal(refeicoesPorAnimal.get(a.id) ?? 0),
+  }));
+  const animalAtivo = animalPorId(user.avatar);
+  const progressoAtivo = colecao.find((c) => c.animal.id === animalAtivo.id)!.progresso;
 
   // Últimos 7 dias para o gráfico (do mais antigo até hoje)
   const hoje = hojeNoBrasil();
@@ -77,7 +91,9 @@ export default async function PerfilPage() {
     <main className="px-6 py-8">
       <PerfilGamificado
         nome={user.nome?.split(" ")[0] ?? null}
-        animal={animalPorId(user.avatar)}
+        animal={animalAtivo}
+        progresso={progressoAtivo}
+        colecao={colecao}
         gamificacao={gamificacao}
         semana={semana}
         meta={meta}
