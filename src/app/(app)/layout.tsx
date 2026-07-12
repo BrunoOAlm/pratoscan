@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import BottomNav from "@/components/BottomNav";
+import BannerInstalarApp from "@/components/BannerInstalarApp";
 
 // Layout de todas as telas logadas (Diário, Scan, Perfil).
 // Funciona como "porteiro" duplo:
@@ -25,6 +26,7 @@ export default async function AppLayout({
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       {/* pb-24 reserva espaço para a bottom nav fixa não cobrir o conteúdo */}
       <div className="flex-1 pb-24">{children}</div>
+      <BannerInstalarApp />
       <BottomNav />
     </div>
   );
