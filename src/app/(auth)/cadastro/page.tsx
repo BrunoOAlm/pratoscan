@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import MosaicoDeComida from "@/components/MosaicoDeComida";
+import FundoLogin from "@/components/FundoLogin";
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function CadastroPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-10">
-      <MosaicoDeComida />
+      <FundoLogin />
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
