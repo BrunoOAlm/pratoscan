@@ -2,6 +2,8 @@
 
 ![CI](https://github.com/BrunoOAlm/pratoscan/actions/workflows/ci.yml/badge.svg)
 
+**🌐 App no ar: [pratoscan.vercel.app](https://pratoscan.vercel.app)** — abra no celular e instale na tela inicial.
+
 **Contagem de calorias por foto.** Fotografe seu prato, a IA identifica os alimentos, estima porções, calorias e macros — e tudo vai para um diário comparado com a sua meta calórica pessoal.
 
 App mobile-first em português (pt-BR), pensado para o contexto brasileiro: a IA é instruída a reconhecer arroz, feijão, farofa, pão francês e a descrever porções em medidas caseiras ("4 colheres de sopa"), com valores baseados na Tabela TACO.
@@ -18,11 +20,11 @@ App mobile-first em português (pt-BR), pensado para o contexto brasileiro: a IA
 | Camada | Tecnologia |
 |---|---|
 | Framework | Next.js (App Router) + TypeScript — frontend e API juntos |
-| UI | Tailwind CSS + Framer Motion (dark mode, mobile-first) |
+| UI | Tailwind CSS + Framer Motion (tema claro esmeralda/laranja, mobile-first) |
 | Banco | PostgreSQL no [Neon](https://neon.tech) via Prisma (connection pooling) |
 | Auth | Auth.js (NextAuth v5) com credentials + sessão JWT |
 | IA de visão | API do Gemini (saída estruturada validada com Zod) — tier gratuito |
-| CI | GitHub Actions — lint, typecheck e build a cada push |
+| CI/CD | GitHub Actions (lint, typecheck, build) + deploy automático na [Vercel](https://vercel.com) |
 
 ## 🔒 Decisões de engenharia
 
@@ -51,13 +53,22 @@ npm run dev
 
 Abra `http://localhost:3000` — ou acesse pelo celular no IP da sua máquina na rede local para testar a câmera de verdade.
 
+## 🎮 Gamificação
+
+Tudo derivado dos dados das refeições — nenhum contador armazenado, nada de trapaça:
+
+- **Mascote estilo tamagotchi** (SVG próprio, interativo): 6 animais pra escolher, 5 estágios de evolução (Bebê → Lendário), com progresso guardado **por animal** — trocar de bicho não perde nada.
+- **Guarda-roupa** desbloqueado por conquistas (chapéu de chef, óculos, medalha...), com validação anti-cheat no servidor.
+- 🔥 Streak de dias, ⭐ XP por refeição, 🏆 6 conquistas, 📊 gráfico semanal e 🎉 celebração ao bater a meta.
+
 ## 🗺️ Roadmap
 
 - [x] **Fase A** — Auth (e-mail/senha), onboarding em wizard, cálculo da meta calórica
-- [x] **Fase B** — Scan por foto com IA, tela de resultado com ajuste manual
-- [ ] **Fase C** — Diário do dia: anel de progresso, barras de macros, navegação entre dias, editar/excluir refeições
-- [ ] **Fase D** — Polish + PWA (manifest, service worker, instalável na tela inicial)
-- [ ] **Pós-MVP** — Gráfico semanal, redesign visual, deploy na Vercel
+- [x] **Fase B** — Scan por foto com IA, tela de resultado com ajuste manual, estimativa por texto
+- [x] **Fase C** — Diário do dia: anel de progresso, barras de macros, navegação entre dias, editar/excluir refeições, completar refeição salva
+- [x] **Fase D** — PWA completo (manifest, service worker, prompt de instalação, ícones da logo)
+- [x] **Pós-MVP** — Gamificação com mascote, redesign claro esmeralda/laranja, gráfico semanal, deploy na Vercel
+- [ ] **Próximos** — Edição de perfil com recálculo da meta, histórico mensal, compartilhar conquistas
 
 ---
 
