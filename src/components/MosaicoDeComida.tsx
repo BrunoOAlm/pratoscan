@@ -1,12 +1,12 @@
 import Image from "next/image";
 
 // ============================================================================
-// Fundo das telas de login/cadastro: mosaico de fotos de comida de verdade
-// (Unsplash, licença livre) com um véu branco por cima — as fotos dão fome,
-// o véu garante a leitura do formulário.
+// Fundo das telas de login/cadastro: mosaico de fotos reais (Unsplash,
+// licença livre) alternando comida saudável e gente treinando, com um véu
+// branco por cima — as fotos dão o clima, o véu garante a leitura.
 // ============================================================================
 
-const TOTAL_FOTOS = 9;
+const TOTAL_FOTOS = 12;
 const CELULAS = 40; // sobra pra cobrir telas altas em qualquer breakpoint
 
 export default function MosaicoDeComida() {
@@ -23,10 +23,10 @@ export default function MosaicoDeComida() {
             // disfarça a repetição das 9 fotos (visual de galeria, não de wallpaper)
             className={`overflow-hidden rounded-xl ${i % 7 === 0 ? "col-span-2 row-span-2" : "aspect-square"}`}
           >
-            {/* passo 4 (coprimo de 9) embaralha a sequência: vizinhos nunca
+            {/* passo 5 (coprimo de 12) embaralha a sequência: vizinhos nunca
                 repetem a mesma foto em nenhum dos breakpoints */}
             <Image
-              src={`/fotos-login/comida-${((i * 4) % TOTAL_FOTOS) + 1}.webp`}
+              src={`/fotos-login/mosaico-${((i * 5) % TOTAL_FOTOS) + 1}.webp`}
               alt=""
               width={480}
               height={480}
